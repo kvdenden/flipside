@@ -27,14 +27,14 @@ contract Market {
         _;
     }
 
-    constructor(string memory pairName_, string memory description_, IERC20 collateral_, Resolver resolver_) {
+    constructor(string memory pairName_, string memory description_, address collateral_, address resolver_) {
         longToken = new OutcomeToken(address(this), string.concat(pairName_, " Long"), "LONG");
         shortToken = new OutcomeToken(address(this), string.concat(pairName_, " Short"), "SHORT");
 
         description = description_;
-        collateralToken = collateral_;
+        collateralToken = IERC20(collateral_);
 
-        _resolver = resolver_;
+        _resolver = Resolver(resolver_);
     }
 
     function mint(address to, uint256 amount) external {

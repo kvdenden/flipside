@@ -7,3 +7,9 @@
 [submodule "contracts/lib/protocol"]
 	path = contracts/lib/protocol
 	url = https://github.com/UMAprotocol/protocol
+[submodule "contracts/lib/v3-core"]
+	path = contracts/lib/v3-core
+	url = https://github.com/Uniswap/v3-core
+[submodule "contracts/lib/v3-periphery"]
+	path = contracts/lib/v3-periphery
+	url = https://github.com/Uniswap/v3-periphery
