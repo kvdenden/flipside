@@ -7,28 +7,25 @@ import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 import {OptimisticOracleV3Interface} from
     "@uma/core/contracts/optimistic-oracle-v3/interfaces/OptimisticOracleV3Interface.sol";
 
+import {Outcome} from "./Outcome.sol";
+import {Outcomes} from "./lib/Outcomes.sol";
+
 contract Resolver {
-    enum Outcome {
-        No,
-        Yes,
-        Invalid
+    struct Query {
+        bool resolved;
+        Outcome outcome;
+        string description;
+    }
+
+    struct Assertion {
+        bytes32 queryId;
+        Outcome outcome;
     }
 
     OptimisticOracleV3Interface private immutable _oo;
     IERC20 public currency;
 
-    struct Market {
-        bool resolved;
-        Outcome outcome;
-        bytes description;
-    }
-
-    struct Assertion {
-        bytes32 marketId;
-        Outcome outcome;
-    }
-
-    mapping(bytes32 => Market) public markets;
+    mapping(bytes32 => Query) public queries;
     mapping(bytes32 => Assertion) public assertions;
 
     constructor(address oo_, address currency_) {
@@ -36,33 +33,39 @@ contract Resolver {
         currency = IERC20(currency_);
     }
 
-    // initialize market
-    function initializeMarket(bytes memory description) public returns (bytes32 marketId) {
-        marketId = keccak256(abi.encode(block.number, description));
-
-        Market storage market = markets[marketId];
-        market.description = description;
+    function resolved(bytes32 queryId) public view returns (bool) {
+        return queries[queryId].resolved;
     }
 
-    // assert market outcome
-    function assertOutcome(bytes32 marketId, Outcome outcome) public returns (bytes32 assertionId) {
-        require(!markets[marketId].resolved, "Market resolved");
+    function outcome(bytes32 queryId) public view returns (Outcome) {
+        return queries[queryId].outcome;
+    }
 
-        bytes memory claim = _claim(marketId, outcome);
+    function initializeQuery(string memory description) public returns (bytes32 queryId) {
+        queryId = keccak256(abi.encode(block.number, description)); // TODO: check if queryId is unique
+
+        Query storage query = queries[queryId];
+        query.description = description;
+    }
+
+    function assertOutcome(bytes32 queryId, Outcome outcome_) public returns (bytes32 assertionId) {
+        require(!queries[queryId].resolved, "Market resolved");
+
+        bytes memory claim = _claim(queryId, outcome_);
         address asserter = msg.sender;
         uint256 bond = _oo.getMinimumBond(address(currency));
 
         assertionId = _assertTruth(claim, asserter, bond);
-        assertions[assertionId] = Assertion(marketId, outcome);
+        assertions[assertionId] = Assertion(queryId, outcome_);
     }
 
     function assertionResolvedCallback(bytes32 assertionId, bool assertedTruthfully) external {
         require(msg.sender == address(_oo), "Not authorized");
 
         if (assertedTruthfully) {
-            bytes32 marketId = assertions[assertionId].marketId;
-            markets[marketId].resolved = true;
-            markets[marketId].outcome = assertions[assertionId].outcome;
+            bytes32 queryId = assertions[assertionId].queryId;
+            queries[queryId].resolved = true;
+            queries[queryId].outcome = assertions[assertionId].outcome;
         }
 
         delete assertions[assertionId];
@@ -76,22 +79,16 @@ contract Resolver {
         );
     }
 
-    function _claim(bytes32 marketId, Outcome outcome) private view returns (bytes memory) {
+    function _claim(bytes32 queryId, Outcome outcome_) private view returns (bytes memory) {
         return abi.encodePacked(
             "Assertion timestamp: ",
             Strings.toString(block.timestamp),
             "\n",
-            "Market description: ",
-            markets[marketId].description,
+            "Query description: ",
+            queries[queryId].description,
             "\n",
-            "Market outcome: ",
-            _toString(outcome)
+            "Outcome: ",
+            Outcomes.toString(outcome_)
         );
-    }
-
-    function _toString(Outcome outcome) private pure returns (string memory) {
-        if (outcome == Outcome.No) return "No";
-        else if (outcome == Outcome.Yes) return "Yes";
-        else return "Invalid";
     }
 }
