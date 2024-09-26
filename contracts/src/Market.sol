@@ -8,6 +8,14 @@ import {Outcome} from "./Outcome.sol";
 import {OutcomeToken} from "./OutcomeToken.sol";
 
 contract Market {
+    struct MarketParams {
+        string pairName;
+        string pairSymbol;
+        string description;
+        address collateralToken;
+        address resolver;
+    }
+
     string public description;
 
     IERC20 public collateralToken;
@@ -27,14 +35,18 @@ contract Market {
         _;
     }
 
-    constructor(string memory pairName_, string memory description_, address collateral_, address resolver_) {
-        longToken = new OutcomeToken(address(this), string.concat(pairName_, " Long"), "LONG");
-        shortToken = new OutcomeToken(address(this), string.concat(pairName_, " Short"), "SHORT");
+    constructor(MarketParams memory params) {
+        longToken = new OutcomeToken(
+            address(this), string.concat(params.pairName, " - Long"), string.concat(params.pairSymbol, "LONG")
+        );
+        shortToken = new OutcomeToken(
+            address(this), string.concat(params.pairName, " - Short"), string.concat(params.pairSymbol, "SHORT")
+        );
 
-        description = description_;
-        collateralToken = IERC20(collateral_);
+        description = params.description;
+        collateralToken = IERC20(params.collateralToken);
 
-        _resolver = Resolver(resolver_);
+        _resolver = Resolver(params.resolver);
     }
 
     function mint(address to, uint256 amount) external {
