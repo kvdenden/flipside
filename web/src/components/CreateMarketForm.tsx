@@ -1,12 +1,8 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { isAddress, parseUnits, zeroAddress } from "viem";
 import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
-
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm, Controller } from "react-hook-form";
 
 import { erc20Abi } from "viem";
 import { marketFactoryAbi } from "@/web3/abi";
@@ -17,33 +13,15 @@ import useConnect from "@/hooks/useConnect";
 import useToken from "@/hooks/useToken";
 
 const popularTokens = [
-  { name: "USDC", address: process.env.NEXT_PUBLIC_USDC, decimals: 6 },
-  { name: "WETH", address: process.env.NEXT_PUBLIC_WETH, decimals: 18 },
+  { name: "USDC", address: process.env.NEXT_PUBLIC_USDC },
+  { name: "WETH", address: process.env.NEXT_PUBLIC_WETH },
 ];
 
-// Replace with your actual MarketFactory contract address
 const MARKET_FACTORY_ADDRESS = process.env.NEXT_PUBLIC_MARKET_FACTORY_CONTRACT_ADDRESS;
-
-// ABI for the createMarket function
 const MARKET_FACTORY_ABI = marketFactoryAbi;
 
-const formSchema = z.object({
-  pairName: z.string().min(1, "Pair name is required").max(50, "Pair name must be 50 characters or less"),
-  pairSymbol: z.string().min(1, "Pair symbol is required").max(10, "Pair symbol must be 10 characters or less"),
-  description: z.string().min(1, "Description is required"),
-  collateralToken: z.string().regex(/^0x[a-fA-F0-9]{40}$/, "Invalid Ethereum address"),
-  initialLiquidity: z
-    .string()
-    .min(1, "Initial liquidity is required")
-    .refine((val) => !isNaN(parseFloat(val)) && parseFloat(val) > 0, {
-      message: "Initial liquidity must be a positive number",
-    }),
-});
-
-type FormData = z.infer<typeof formSchema>;
-
 export default function CreateMarketForm() {
-  const [formData, setFormData] = useState<FormData>({
+  const [formData, setFormData] = useState({
     pairName: "",
     pairSymbol: "",
     description: "",
@@ -55,7 +33,6 @@ export default function CreateMarketForm() {
   const { connect } = useConnect();
 
   const { data: collateralToken } = useToken({ address: formData.collateralToken as `0x${string}` });
-  console.log("collateral token", collateralToken);
 
   const initialLiquidity = useMemo(
     () => (collateralToken ? parseUnits(formData.initialLiquidity, collateralToken.decimals) : BigInt(0)),
@@ -107,16 +84,6 @@ export default function CreateMarketForm() {
     () => !!allowance && allowance >= initialLiquidity,
     [allowance, initialLiquidity]
   );
-
-  console.log("balance", balance);
-  console.log("allowance", allowance);
-  console.log("approve", approve);
-  console.log("approveReceipt", approveReceipt);
-  console.log("createMarket", createMarket);
-  console.log("createMarketReceipt", createMarketReceipt);
-  console.log("initialLiquidity", initialLiquidity);
-  console.log("sufficientBalance", sufficientBalance);
-  console.log("sufficientAllowance", sufficientAllowance);
 
   const handleApprove = (e: React.FormEvent) => {
     e.preventDefault();
