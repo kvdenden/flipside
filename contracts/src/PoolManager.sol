@@ -1,67 +1,89 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.23;
 
-import {IUniswapV3Factory} from "@uniswap/v3-core/contracts/interfaces/IUniswapV3Factory.sol";
-import {TickMath} from "@uniswap/v3-core/contracts/libraries/TickMath.sol";
+import { Math } from "@openzeppelin/contracts/utils/math/Math.sol";
 
-import {INonfungiblePositionManager} from "@uniswap/v3-periphery/contracts/interfaces/INonfungiblePositionManager.sol";
+import { IUniswapV3Factory } from "@uniswap/v3-core/contracts/interfaces/IUniswapV3Factory.sol";
+import { IUniswapV3Pool } from "@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol";
+import { TickMath } from "@uniswap/v3-core/contracts/libraries/TickMath.sol";
 
-import {Market} from "./Market.sol";
+import { INonfungiblePositionManager } from "@uniswap/v3-periphery/contracts/interfaces/INonfungiblePositionManager.sol";
+
+import { Market } from "./Market.sol";
 
 contract PoolManager {
-    uint24 public constant FEE = 10_000;
+  uint24 public constant FEE = 10_000;
 
-    IUniswapV3Factory public immutable factory;
-    INonfungiblePositionManager public immutable positionManager;
+  IUniswapV3Factory public immutable factory;
+  INonfungiblePositionManager public immutable positionManager;
 
-    mapping(Market => uint256 tokenId) private _liquidity;
+  mapping(Market => uint256 tokenId) private _liquidity;
 
-    constructor(address factory_, address positionManager_) {
-        factory = IUniswapV3Factory(factory_);
-        positionManager = INonfungiblePositionManager(positionManager_);
-    }
+  constructor(address factory_, address positionManager_) {
+    factory = IUniswapV3Factory(factory_);
+    positionManager = INonfungiblePositionManager(positionManager_);
+  }
 
-    function createPool(Market market, uint256 initialLiquidity) external returns (address pool) {
-        (address tokenA, address tokenB) = _tokens(market);
+  function createPool(Market market, uint256 initialLiquidity) external returns (address pool) {
+    (address token0, address token1) = _tokens(market);
 
-        pool = factory.createPool(tokenA, tokenB, FEE);
-        _liquidity[market] = _mintLiquidity(market, initialLiquidity);
-    }
+    pool = positionManager.createAndInitializePoolIfNecessary(token0, token1, FEE, 2 ** 96);
+    _liquidity[market] = _mintLiquidity(market, initialLiquidity);
+  }
 
-    function getPool(Market market) external view returns (address pool) {
-        (address tokenA, address tokenB) = _tokens(market);
+  function getPool(Market market) external view returns (address pool) {
+    pool = _pool(market);
+  }
 
-        pool = factory.getPool(tokenA, tokenB, FEE);
-    }
+  function _mintLiquidity(Market market, uint256 amount) internal returns (uint256 tokenId) {
+    market.collateralToken().transferFrom(msg.sender, address(this), amount);
+    market.collateralToken().approve(address(market), amount);
 
-    function _mintLiquidity(Market market, uint256 amount) internal returns (uint256 tokenId) {
-        market.collateralToken().transferFrom(msg.sender, address(this), amount);
-        market.collateralToken().approve(address(market), amount);
+    market.mint(address(this), amount);
 
-        market.mint(address(this), amount);
+    market.longToken().approve(address(positionManager), amount);
+    market.shortToken().approve(address(positionManager), amount);
 
-        market.longToken().approve(address(positionManager), amount);
-        market.shortToken().approve(address(positionManager), amount);
+    (address token0, address token1) = _tokens(market);
 
-        INonfungiblePositionManager.MintParams memory params = INonfungiblePositionManager.MintParams({
-            token0: address(market.longToken()),
-            token1: address(market.shortToken()),
-            fee: FEE,
-            tickLower: TickMath.MIN_TICK,
-            tickUpper: TickMath.MAX_TICK,
-            amount0Desired: amount,
-            amount1Desired: amount,
-            amount0Min: 0,
-            amount1Min: 0,
-            recipient: address(this),
-            deadline: block.timestamp
-        });
+    (int24 tickLower, int24 tickUpper) = _ticks(amount, factory.feeAmountTickSpacing(FEE));
 
-        (tokenId,,,) = positionManager.mint(params);
-    }
+    INonfungiblePositionManager.MintParams memory params = INonfungiblePositionManager.MintParams({
+      token0: token0,
+      token1: token1,
+      fee: FEE,
+      tickLower: tickLower,
+      tickUpper: tickUpper,
+      amount0Desired: amount,
+      amount1Desired: amount,
+      amount0Min: 0,
+      amount1Min: 0,
+      recipient: address(this),
+      deadline: block.timestamp
+    });
 
-    function _tokens(Market market) internal view returns (address tokenA, address tokenB) {
-        tokenA = address(market.longToken());
-        tokenB = address(market.shortToken());
-    }
+    (tokenId,,,) = positionManager.mint(params);
+  }
+
+  function _pool(Market market) internal view returns (address pool) {
+    (address tokenA, address tokenB) = _tokens(market);
+
+    pool = factory.getPool(tokenA, tokenB, FEE);
+  }
+
+  function _tokens(Market market) internal view returns (address token0, address token1) {
+    address longToken = address(market.longToken());
+    address shortToken = address(market.shortToken());
+
+    (token0, token1) = longToken < shortToken ? (longToken, shortToken) : (shortToken, longToken);
+  }
+
+  function _ticks(uint256 ratio, int24 tickSpacing) internal pure returns (int24 tickLower, int24 tickUpper) {
+    uint160 sqrtPriceX96 = uint160(Math.sqrt(ratio) * 2 ** 96);
+
+    int24 tick = TickMath.getTickAtSqrtRatio(sqrtPriceX96);
+
+    tickUpper = tick % tickSpacing == 0 ? tick : tick + tickSpacing - tick % tickSpacing;
+    tickLower = -tickUpper;
+  }
 }
