@@ -10,6 +10,10 @@ contract MarketFactory {
   address private immutable _resolver;
   PoolManager private immutable _poolManager;
 
+  event MarketCreated(
+    address indexed market, address indexed creator, address indexed collateralToken, uint256 initialLiquidity
+  );
+
   constructor(address resolver_, address poolManager_) {
     _resolver = resolver_;
 
@@ -31,6 +35,8 @@ contract MarketFactory {
     market.collateralToken().approve(address(_poolManager), initialLiquidity);
 
     _poolManager.createPool(market, initialLiquidity);
+
+    emit MarketCreated(address(market), msg.sender, collateralToken, initialLiquidity);
 
     return address(market);
   }
