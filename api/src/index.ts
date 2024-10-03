@@ -1,14 +1,48 @@
 import { ponder } from "@/generated";
+import { marketAbi } from "../abis/flipside";
 
 ponder.on("MarketFactory:MarketCreated", async ({ event, context }) => {
-  const { market, creator, collateralToken } = event.args;
-  const { Market } = context.db;
+  const { market, creator, collateralToken, pool, initialLiquidity } = event.args;
+  const { client, db } = context;
 
-  await Market.create({
+  const description = await client.readContract({
+    abi: marketAbi,
+    address: market,
+    functionName: "description",
+  });
+
+  const longToken = await client.readContract({
+    abi: marketAbi,
+    address: market,
+    functionName: "longToken",
+  });
+
+  const shortToken = await client.readContract({
+    abi: marketAbi,
+    address: market,
+    functionName: "shortToken",
+  });
+
+  await db.Market.create({
     id: market,
     data: {
       creator,
       collateralToken,
+      description,
+      longToken,
+      shortToken,
+      resolved: false,
+      outcome: undefined,
+
+      createdAt: Number(event.block.timestamp),
+    },
+  });
+
+  await db.Pool.create({
+    id: pool,
+    data: {
+      initialLiquidity,
+      marketId: market,
     },
   });
 });
