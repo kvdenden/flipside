@@ -3,15 +3,20 @@
 import { Button, Card, CardBody, Progress } from "@nextui-org/react";
 
 import useMarket from "@/hooks/useMarket";
+import usePool from "@/hooks/usePool";
+import useToken from "@/hooks/useToken";
 
 type MarketCardProps = {
   marketId: `0x${string}`;
 };
 
 export default function MarketCard({ marketId }: MarketCardProps) {
-  const { data: market, isLoading } = useMarket(marketId);
+  const { data: market } = useMarket(marketId);
+  const { data: pool } = usePool(marketId);
 
   if (!market) return null;
+
+  const yesPercentage = pool && parseInt(pool.token0Price.add(1).invert().multiply(100).toFixed(0));
 
   return (
     <Card className="w-full bg-gray-800 text-white">
@@ -20,9 +25,9 @@ export default function MarketCard({ marketId }: MarketCardProps) {
           <h3 className="text-lg font-semibold mb-2">{market.description}</h3>
           <div className="flex items-center justify-between">
             <span className="text-sm">Yes</span>
-            <span className="text-sm">73%</span>
+            <span className="text-sm">{yesPercentage}%</span>
           </div>
-          <Progress color="primary" value={73} className="my-2" aria-label="Yes percentage" />
+          <Progress color="primary" value={yesPercentage} className="my-2" aria-label="Yes percentage" />
         </div>
         <div className="flex gap-2 mb-4">
           <Button color="success" className="flex-1">
