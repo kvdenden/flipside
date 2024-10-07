@@ -1,114 +1,116 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.23;
 
-import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-import {Resolver} from "./Resolver.sol";
-import {Outcome} from "./Outcome.sol";
-import {OutcomeToken} from "./OutcomeToken.sol";
+import { Resolver } from "./Resolver.sol";
+import { Outcome } from "./Outcome.sol";
+import { OutcomeToken } from "./OutcomeToken.sol";
 
 contract Market {
-    struct MarketParams {
-        string pairName;
-        string pairSymbol;
-        string description;
-        address collateralToken;
-        address resolver;
-    }
+  struct MarketParams {
+    string pairName;
+    string pairSymbol;
+    string title;
+    string description;
+    address collateralToken;
+    address resolver;
+  }
 
-    string public description;
+  string public title;
+  string public description;
 
-    IERC20 public collateralToken;
+  IERC20 public collateralToken;
 
-    OutcomeToken public longToken;
-    OutcomeToken public shortToken;
+  OutcomeToken public longToken;
+  OutcomeToken public shortToken;
 
-    Resolver private _resolver;
-    bytes32 private _resolutionId;
+  uint256 public totalVolume;
 
-    event Minted(address indexed from, address indexed to, uint256 amount);
-    event Redeemed(address indexed from, address indexed to, uint256 amount);
-    event Settled(address indexed from, address indexed to, uint256 amount);
+  Resolver private _resolver;
+  bytes32 private _resolutionId;
 
-    modifier whenResolved() {
-        require(resolved(), "Market not resolved");
-        _;
-    }
+  event Minted(address indexed from, address indexed to, uint256 amount);
+  event Redeemed(address indexed from, address indexed to, uint256 amount);
+  event Settled(address indexed from, address indexed to, uint256 amount);
 
-    constructor(MarketParams memory params) {
-        longToken = new OutcomeToken(
-            address(this), string.concat(params.pairName, " - Long"), string.concat(params.pairSymbol, "LONG")
-        );
-        shortToken = new OutcomeToken(
-            address(this), string.concat(params.pairName, " - Short"), string.concat(params.pairSymbol, "SHORT")
-        );
+  modifier whenResolved() {
+    require(resolved(), "Market not resolved");
+    _;
+  }
 
-        description = params.description;
-        collateralToken = IERC20(params.collateralToken);
+  constructor(MarketParams memory params) {
+    longToken = new OutcomeToken(
+      address(this), string.concat(params.pairName, " - Long"), string.concat(params.pairSymbol, "LONG")
+    );
+    shortToken = new OutcomeToken(
+      address(this), string.concat(params.pairName, " - Short"), string.concat(params.pairSymbol, "SHORT")
+    );
 
-        _resolver = Resolver(params.resolver);
-    }
+    title = params.title;
+    description = params.description;
+    collateralToken = IERC20(params.collateralToken);
 
-    function mint(address to, uint256 amount) external {
-        collateralToken.transferFrom(msg.sender, address(this), amount);
+    _resolver = Resolver(params.resolver);
+  }
 
-        longToken.mint(to, amount);
-        shortToken.mint(to, amount);
+  function mint(address to, uint256 amount) external {
+    collateralToken.transferFrom(msg.sender, address(this), amount);
 
-        emit Minted(msg.sender, to, amount);
-    }
+    longToken.mint(to, amount);
+    shortToken.mint(to, amount);
+    totalVolume += amount;
 
-    function redeem(address to, uint256 amount) external {
-        longToken.burn(msg.sender, amount);
-        shortToken.burn(msg.sender, amount);
+    emit Minted(msg.sender, to, amount);
+  }
 
-        _payout(to, amount);
+  function redeem(address to, uint256 amount) external {
+    longToken.burn(msg.sender, amount);
+    shortToken.burn(msg.sender, amount);
 
-        emit Redeemed(msg.sender, to, amount);
-    }
+    _payout(to, amount);
 
-    function settle(address to, uint256 longAmount, uint256 shortAmount)
-        external
-        whenResolved
-        returns (uint256 amount)
-    {
-        longToken.burn(msg.sender, longAmount);
-        shortToken.burn(msg.sender, shortAmount);
+    emit Redeemed(msg.sender, to, amount);
+  }
 
-        Outcome outcome_ = outcome();
-        amount = _calculatePayoutAmount(outcome_, longAmount, shortAmount);
+  function settle(address to, uint256 longAmount, uint256 shortAmount) external whenResolved returns (uint256 amount) {
+    longToken.burn(msg.sender, longAmount);
+    shortToken.burn(msg.sender, shortAmount);
 
-        _payout(to, amount);
+    Outcome outcome_ = outcome();
+    amount = _calculatePayoutAmount(outcome_, longAmount, shortAmount);
 
-        emit Settled(msg.sender, to, amount);
-    }
+    _payout(to, amount);
 
-    function startResolution() external {
-        require(_resolutionId == 0, "Already started resolution");
+    emit Settled(msg.sender, to, amount);
+  }
 
-        _resolutionId = _resolver.initializeQuery(description);
-    }
+  function startResolution() external {
+    require(_resolutionId == 0, "Already started resolution");
 
-    function resolved() public view returns (bool) {
-        return _resolutionId != 0 && _resolver.resolved(_resolutionId);
-    }
+    _resolutionId = _resolver.initializeQuery(description);
+  }
 
-    function outcome() public view whenResolved returns (Outcome) {
-        return _resolver.outcome(_resolutionId);
-    }
+  function resolved() public view returns (bool) {
+    return _resolutionId != 0 && _resolver.resolved(_resolutionId);
+  }
 
-    function _payout(address to, uint256 amount) private {
-        collateralToken.transfer(to, amount);
-    }
+  function outcome() public view whenResolved returns (Outcome) {
+    return _resolver.outcome(_resolutionId);
+  }
 
-    function _calculatePayoutAmount(Outcome outcome_, uint256 longAmount, uint256 shortAmount)
-        private
-        pure
-        returns (uint256)
-    {
-        if (outcome_ == Outcome.Yes) return longAmount;
-        if (outcome_ == Outcome.No) return shortAmount;
+  function _payout(address to, uint256 amount) private {
+    collateralToken.transfer(to, amount);
+  }
 
-        return (longAmount + shortAmount) / 2;
-    }
+  function _calculatePayoutAmount(Outcome outcome_, uint256 longAmount, uint256 shortAmount)
+    private
+    pure
+    returns (uint256)
+  {
+    if (outcome_ == Outcome.Yes) return longAmount;
+    if (outcome_ == Outcome.No) return shortAmount;
+
+    return (longAmount + shortAmount) / 2;
+  }
 }

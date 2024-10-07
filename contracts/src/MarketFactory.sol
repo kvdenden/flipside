@@ -7,6 +7,16 @@ import { Market } from "./Market.sol";
 import { PoolManager } from "./PoolManager.sol";
 
 contract MarketFactory {
+  struct Params {
+    address creator;
+    string pairName;
+    string pairSymbol;
+    string title;
+    string description;
+    address collateralToken;
+    uint256 initialLiquidity;
+  }
+
   address private immutable _resolver;
   PoolManager private immutable _poolManager;
 
@@ -24,24 +34,19 @@ contract MarketFactory {
     _poolManager = PoolManager(poolManager_);
   }
 
-  function createMarket(
-    string memory pairName,
-    string memory pairSymbol,
-    string memory description,
-    address collateralToken,
-    uint256 initialLiquidity
-  ) external returns (address) {
-    Market.MarketParams memory params =
-      Market.MarketParams(pairName, pairSymbol, description, collateralToken, _resolver);
-    Market market = new Market(params);
+  function createMarket(Params memory params) external returns (Market) {
+    Market.MarketParams memory marketParams = Market.MarketParams(
+      params.pairName, params.pairSymbol, params.title, params.description, params.collateralToken, _resolver
+    );
+    Market market = new Market(marketParams);
 
-    market.collateralToken().transferFrom(msg.sender, address(this), initialLiquidity);
-    market.collateralToken().approve(address(_poolManager), initialLiquidity);
+    market.collateralToken().transferFrom(msg.sender, address(this), params.initialLiquidity);
+    market.collateralToken().approve(address(_poolManager), params.initialLiquidity);
 
-    address pool = _poolManager.createPool(market, initialLiquidity);
+    address pool = _poolManager.createPool(market, params.initialLiquidity);
 
-    emit MarketCreated(address(market), msg.sender, collateralToken, pool, initialLiquidity);
+    emit MarketCreated(address(market), params.creator, params.collateralToken, pool, params.initialLiquidity);
 
-    return address(market);
+    return market;
   }
 }

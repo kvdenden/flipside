@@ -34,7 +34,7 @@ contract MarketTest is Test {
     resolver = new Resolver(oo, usdc);
 
     Market.MarketParams memory params =
-      Market.MarketParams("Flipside", "FLIP", "What does the fox say?", address(collateralToken), address(resolver));
+      Market.MarketParams("Flipside", "FLIP", "What does the fox say?", "", address(collateralToken), address(resolver));
     market = new Market(params);
   }
 

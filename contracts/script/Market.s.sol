@@ -15,11 +15,12 @@ contract Deploy is Script {
     address usdc = vm.envAddress("USDC");
     address resolver = vm.envAddress("RESOLVER_CONTRACT_ADDRESS");
 
+    string memory title = vm.prompt("Enter market title");
     string memory description = vm.prompt("Enter market description");
 
     vm.startBroadcast(privateKey);
 
-    Market.MarketParams memory params = Market.MarketParams("Flipside", "FLIP", description, usdc, resolver);
+    Market.MarketParams memory params = Market.MarketParams("Flipside", "FLIP", title, description, usdc, resolver);
 
     market = new Market(params);
     console.log("Market deployed at:", address(market));
