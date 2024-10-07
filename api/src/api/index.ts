@@ -9,14 +9,10 @@ function serialize(obj: any) {
 ponder.use("/graphql", graphql());
 
 ponder.get("/markets", async (c) => {
-  const { Market, Pool } = c.tables;
-  const result = await c.db
-    .select()
-    .from(c.tables.Market)
-    .leftJoin(c.tables.Pool, eq(Market.id, Pool.marketId))
-    .limit(10);
+  const { Market } = c.tables;
+  const result = await c.db.select({ id: Market.id }).from(c.tables.Market);
 
-  return c.json(serialize(result));
+  return c.json(result);
 });
 
 ponder.get("/markets/:address", async (c) => {

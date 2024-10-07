@@ -1,12 +1,18 @@
+"use client";
+
 import { useReadContracts } from "wagmi";
 import { erc20Abi } from "viem";
 import { useMemo } from "react";
 
-type UseTokenParams = {
-  address?: `0x${string}`;
+export type Token = {
+  address: `0x${string}`;
+  decimals: number;
+  name: string;
+  symbol: string;
+  totalSupply: bigint;
 };
 
-export default function useToken({ address }: UseTokenParams) {
+export default function useToken(address?: `0x${string}`) {
   const result = useReadContracts({
     allowFailure: false,
     contracts: [
@@ -36,7 +42,7 @@ export default function useToken({ address }: UseTokenParams) {
     },
   });
 
-  const token = useMemo(() => {
+  const token: Token | undefined = useMemo(() => {
     if (!address || !result.data) return;
 
     const [decimals, name, symbol, totalSupply] = result.data;

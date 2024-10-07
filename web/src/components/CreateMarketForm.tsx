@@ -32,7 +32,7 @@ export default function CreateMarketForm() {
   const { address, isConnected } = useAccount();
   const { connect } = useConnect();
 
-  const { data: collateralToken } = useToken({ address: formData.collateralToken as `0x${string}` });
+  const { data: collateralToken } = useToken(formData.collateralToken as `0x${string}`);
 
   const initialLiquidity = useMemo(
     () => (collateralToken ? parseUnits(formData.initialLiquidity, collateralToken.decimals) : BigInt(0)),
