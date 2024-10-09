@@ -37,6 +37,14 @@ contract MarketTest is Test {
     collateralToken.mint(address(this), 1000);
     collateralToken.approve(address(poolManager), 1000);
 
-    poolManager.createPool(market, 1000);
+    address pool = poolManager.createPool(market, 1000);
+
+    assertNotEq(
+      poolManager.factory().getPool(address(market.longToken()), address(market.shortToken()), poolManager.FEE()),
+      address(0)
+    );
+
+    assertEq(market.longToken().balanceOf(pool), 1000);
+    assertEq(market.shortToken().balanceOf(pool), 1000);
   }
 }

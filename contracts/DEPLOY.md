@@ -9,6 +9,7 @@
 
 - set env variable UNISWAP_V3FACTORY (UniswapV3Factory)
 - set env variable UNISWAP_V3POSITION_MANAGER (NonfungiblePositionManager)
+- set env variable UNISWAP_SWAPROUTER (SwapRouter02)
 
 ### UMA
 

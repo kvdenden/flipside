@@ -3,18 +3,18 @@ pragma solidity ^0.8.23;
 
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-import { ISwapRouter } from "@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol";
+import { IV3SwapRouter } from "./interfaces/uniswap/IV3SwapRouter.sol";
 
 import { MarketFactory } from "./MarketFactory.sol";
 import { Market } from "./Market.sol";
 
 contract Flipside {
   MarketFactory public marketFactory;
-  ISwapRouter public swapRouter;
+  IV3SwapRouter public swapRouter;
 
-  constructor(MarketFactory marketFactory_, ISwapRouter swapRouter_) {
-    marketFactory = marketFactory_;
-    swapRouter = swapRouter_;
+  constructor(address marketFactory_, address swapRouter_) {
+    marketFactory = MarketFactory(marketFactory_);
+    swapRouter = IV3SwapRouter(swapRouter_);
   }
 
   function createMarket(MarketFactory.Params memory params) external returns (Market) {
@@ -53,12 +53,11 @@ contract Flipside {
   {
     IERC20(tokenIn).approve(address(swapRouter), amountIn);
 
-    ISwapRouter.ExactInputSingleParams memory params = ISwapRouter.ExactInputSingleParams({
+    IV3SwapRouter.ExactInputSingleParams memory params = IV3SwapRouter.ExactInputSingleParams({
       tokenIn: tokenIn,
       tokenOut: tokenOut,
       fee: 10_000,
       recipient: address(this),
-      deadline: block.timestamp,
       amountIn: amountIn,
       amountOutMinimum: amountOutMin,
       sqrtPriceLimitX96: 0
