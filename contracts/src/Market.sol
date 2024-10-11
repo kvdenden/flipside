@@ -3,6 +3,8 @@ pragma solidity ^0.8.23;
 
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
+import { Price } from "./lib/Price.sol";
+
 import { Resolver } from "./Resolver.sol";
 import { Outcome } from "./Outcome.sol";
 import { OutcomeToken } from "./OutcomeToken.sol";
@@ -14,6 +16,7 @@ contract Market {
     string title;
     string description;
     address collateralToken;
+    uint256 unitPrice;
     address resolver;
   }
 
@@ -21,6 +24,8 @@ contract Market {
   string public description;
 
   IERC20 public collateralToken;
+
+  uint256 public unitPrice;
 
   OutcomeToken public longToken;
   OutcomeToken public shortToken;
@@ -50,12 +55,16 @@ contract Market {
     title = params.title;
     description = params.description;
     collateralToken = IERC20(params.collateralToken);
+    unitPrice = params.unitPrice;
 
     _resolver = Resolver(params.resolver);
   }
 
   function mint(address to, uint256 amount) external {
-    collateralToken.transferFrom(msg.sender, address(this), amount);
+    require(amount % 1e18 == 0, "Invalid amount");
+
+    uint256 collateralAmount = price(amount);
+    collateralToken.transferFrom(msg.sender, address(this), collateralAmount);
 
     longToken.mint(to, amount);
     shortToken.mint(to, amount);
@@ -91,6 +100,10 @@ contract Market {
     _resolutionId = _resolver.initializeQuery(description);
   }
 
+  function price(uint256 amount) public view returns (uint256) {
+    return Price.calculate(amount, unitPrice);
+  }
+
   function resolved() public view returns (bool) {
     return _resolutionId != 0 && _resolver.resolved(_resolutionId);
   }
@@ -100,7 +113,7 @@ contract Market {
   }
 
   function _payout(address to, uint256 amount) private {
-    collateralToken.transfer(to, amount);
+    collateralToken.transfer(to, price(amount));
   }
 
   function _calculatePayoutAmount(Outcome outcome_, uint256 longAmount, uint256 shortAmount)

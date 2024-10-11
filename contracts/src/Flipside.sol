@@ -5,6 +5,8 @@ import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 import { IV3SwapRouter } from "./interfaces/uniswap/IV3SwapRouter.sol";
 
+import { Price } from "./lib/Price.sol";
+
 import { MarketFactory } from "./MarketFactory.sol";
 import { Market } from "./Market.sol";
 
@@ -19,8 +21,10 @@ contract Flipside {
 
   function createMarket(MarketFactory.Params memory params) external returns (Market) {
     IERC20 collateralToken = IERC20(params.collateralToken);
-    collateralToken.transferFrom(msg.sender, address(this), params.initialLiquidity);
-    collateralToken.approve(address(marketFactory), params.initialLiquidity);
+    uint256 collateralAmount = Price.calculate(params.initialLiquidity, params.unitPrice);
+
+    collateralToken.transferFrom(msg.sender, address(this), collateralAmount);
+    collateralToken.approve(address(marketFactory), collateralAmount);
 
     return marketFactory.createMarket(params);
   }
@@ -42,8 +46,9 @@ contract Flipside {
 
   function _mint(Market market, address to, uint256 amount) internal {
     IERC20 collateralToken = market.collateralToken();
-    collateralToken.transferFrom(msg.sender, address(this), amount);
-    collateralToken.approve(address(market), amount);
+    uint256 collateralAmount = market.price(amount);
+    collateralToken.transferFrom(msg.sender, address(this), collateralAmount);
+    collateralToken.approve(address(market), collateralAmount);
     market.mint(to, amount);
   }
 

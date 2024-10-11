@@ -31,11 +31,13 @@ contract MarketFactoryTest is Test {
   }
 
   function test_createMarket() public {
-    collateralToken.mint(address(this), 1000);
-    collateralToken.approve(address(marketFactory), 1000);
+    uint256 initialLiquidity = 10 * 1e18;
+
+    collateralToken.mint(address(this), initialLiquidity);
+    collateralToken.approve(address(marketFactory), initialLiquidity);
 
     MarketFactory.Params memory params = MarketFactory.Params(
-      address(this), "Flipside", "FLIP", "What does the fox say?", "", address(collateralToken), 1000
+      address(this), "Flipside", "FLIP", "What does the fox say?", "", address(collateralToken), 1e18, initialLiquidity
     );
     marketFactory.createMarket(params);
   }

@@ -20,7 +20,7 @@ contract Deploy is Script {
 
     vm.startBroadcast(privateKey);
 
-    Market.MarketParams memory params = Market.MarketParams("Flipside", "FLIP", title, description, usdc, resolver);
+    Market.MarketParams memory params = Market.MarketParams("Flipside", "FLIP", title, description, usdc, 1e6, resolver);
 
     market = new Market(params);
     console.log("Market deployed at:", address(market));

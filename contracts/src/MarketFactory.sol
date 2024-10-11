@@ -14,6 +14,7 @@ contract MarketFactory {
     string title;
     string description;
     address collateralToken;
+    uint256 unitPrice;
     uint256 initialLiquidity;
   }
 
@@ -36,12 +37,19 @@ contract MarketFactory {
 
   function createMarket(Params memory params) external returns (Market) {
     Market.MarketParams memory marketParams = Market.MarketParams(
-      params.pairName, params.pairSymbol, params.title, params.description, params.collateralToken, _resolver
+      params.pairName,
+      params.pairSymbol,
+      params.title,
+      params.description,
+      params.collateralToken,
+      params.unitPrice,
+      _resolver
     );
     Market market = new Market(marketParams);
 
-    market.collateralToken().transferFrom(msg.sender, address(this), params.initialLiquidity);
-    market.collateralToken().approve(address(_poolManager), params.initialLiquidity);
+    uint256 collateralAmount = market.price(params.initialLiquidity);
+    market.collateralToken().transferFrom(msg.sender, address(this), collateralAmount);
+    market.collateralToken().approve(address(_poolManager), collateralAmount);
 
     address pool = _poolManager.createPool(market, params.initialLiquidity);
 

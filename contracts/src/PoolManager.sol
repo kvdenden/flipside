@@ -36,8 +36,10 @@ contract PoolManager {
   }
 
   function _mintLiquidity(Market market, uint256 amount) internal returns (uint256 tokenId) {
-    market.collateralToken().transferFrom(msg.sender, address(this), amount);
-    market.collateralToken().approve(address(market), amount);
+    uint256 collateralAmount = market.price(amount);
+
+    market.collateralToken().transferFrom(msg.sender, address(this), collateralAmount);
+    market.collateralToken().approve(address(market), collateralAmount);
 
     market.mint(address(this), amount);
 

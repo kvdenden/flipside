@@ -10,7 +10,7 @@ import { PoolManager } from "../src/PoolManager.sol";
 
 import { Market } from "../src/Market.sol";
 
-contract MarketTest is Test {
+contract PoolManagerTest is Test {
   MockERC20 collateralToken;
 
   PoolManager poolManager;
@@ -26,25 +26,29 @@ contract MarketTest is Test {
     collateralToken = new MockERC20();
 
     Resolver resolver = new Resolver(oo, usdc);
-    Market.MarketParams memory params =
-      Market.MarketParams("Flipside", "FLIP", "What does the fox say?", "", address(collateralToken), address(resolver));
+    Market.MarketParams memory params = Market.MarketParams(
+      "Flipside", "FLIP", "What does the fox say?", "", address(collateralToken), 1e6, address(resolver)
+    );
     market = new Market(params);
 
     poolManager = new PoolManager(factory, positionManager);
   }
 
   function test_createPool() public {
-    collateralToken.mint(address(this), 1000);
-    collateralToken.approve(address(poolManager), 1000);
+    uint256 initialLiquidity = 10 * 1e18;
+    uint256 collateralAmount = market.price(initialLiquidity);
 
-    address pool = poolManager.createPool(market, 1000);
+    collateralToken.mint(address(this), collateralAmount);
+    collateralToken.approve(address(poolManager), collateralAmount);
+
+    address pool = poolManager.createPool(market, initialLiquidity);
 
     assertNotEq(
       poolManager.factory().getPool(address(market.longToken()), address(market.shortToken()), poolManager.FEE()),
       address(0)
     );
 
-    assertEq(market.longToken().balanceOf(pool), 1000);
-    assertEq(market.shortToken().balanceOf(pool), 1000);
+    assertEq(market.longToken().balanceOf(pool), initialLiquidity);
+    assertEq(market.shortToken().balanceOf(pool), initialLiquidity);
   }
 }

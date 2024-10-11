@@ -33,14 +33,21 @@ contract MarketTest is Test {
     collateralToken = new MockERC20();
     resolver = new Resolver(oo, usdc);
 
-    Market.MarketParams memory params =
-      Market.MarketParams("Flipside", "FLIP", "What does the fox say?", "", address(collateralToken), address(resolver));
+    Market.MarketParams memory params = Market.MarketParams(
+      "Flipside", "FLIP", "What does the fox say?", "", address(collateralToken), 1e6, address(resolver)
+    );
     market = new Market(params);
   }
 
   function test_mint() public {
-    collateralToken.mint(address(this), 1000);
-    collateralToken.approve(address(market), 1000);
-    market.mint(address(this), 1000);
+    collateralToken.mint(address(this), 100 * 1e6);
+    collateralToken.approve(address(market), 100 * 1e6);
+    market.mint(address(this), 100 * 1e18);
+
+    assertEq(market.totalVolume(), 100 * 1e18);
+    assertEq(collateralToken.balanceOf(address(market)), 100 * 1e6);
+
+    assertEq(market.longToken().balanceOf(address(this)), 100 * 1e18);
+    assertEq(market.shortToken().balanceOf(address(this)), 100 * 1e18);
   }
 }

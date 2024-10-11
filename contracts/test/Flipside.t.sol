@@ -5,6 +5,7 @@ import { Test, console } from "forge-std/Test.sol";
 
 import { MockERC20 } from "./mocks/MockERC20.sol";
 
+import { Price } from "../src/lib/Price.sol";
 import { Market } from "../src/Market.sol";
 
 import { Resolver } from "../src/Resolver.sol";
@@ -36,44 +37,59 @@ contract FlipsideTest is Test {
   }
 
   function test_createMarket() public {
-    uint256 initialLiquidity = 10 ** 6;
+    uint256 initialLiquidity = 10 * 1e18;
     Market market = _createMarket(initialLiquidity);
 
     assertEq(market.totalVolume(), initialLiquidity);
-    assertEq(collateralToken.balanceOf(address(market)), initialLiquidity);
+    assertEq(collateralToken.balanceOf(address(market)), market.price(initialLiquidity));
   }
 
   function test_mintPair() public {
-    uint256 initialLiquidity = 10_000_000;
+    uint256 initialLiquidity = 10 * 1e18;
     Market market = _createMarket(initialLiquidity);
 
-    uint256 amount = 1_000_000;
-    collateralToken.mint(address(this), amount);
+    uint256 amount = 1e18;
+    collateralToken.mint(address(this), market.price(amount));
 
     flipside.mintPair(market, address(this), amount);
 
     assertEq(market.totalVolume(), initialLiquidity + amount);
-    assertEq(collateralToken.balanceOf(address(market)), initialLiquidity + amount);
+    assertEq(collateralToken.balanceOf(address(market)), market.price(initialLiquidity + amount));
 
     assertEq(market.longToken().balanceOf(address(this)), amount);
     assertEq(market.shortToken().balanceOf(address(this)), amount);
   }
 
   function test_mintOutcome() public {
-    uint256 initialLiquidity = 10_000_000;
+    uint256 initialLiquidity = 10 * 1e18;
     Market market = _createMarket(initialLiquidity);
 
-    uint256 amount = 1_000_000;
-    collateralToken.mint(address(this), amount);
+    uint256 amount = 1e18;
+    collateralToken.mint(address(this), market.price(amount));
 
     flipside.mintOutcome(market, address(this), amount, 0, true);
+
+    assertEq(market.totalVolume(), initialLiquidity + amount);
+    assertEq(collateralToken.balanceOf(address(market)), market.price(initialLiquidity + amount));
+
+    assertGt(market.longToken().balanceOf(address(this)), amount);
+    assertEq(market.shortToken().balanceOf(address(this)), 0);
   }
 
   function _createMarket(uint256 initialLiquidity) internal returns (Market) {
-    collateralToken.mint(address(this), initialLiquidity);
+    uint256 unitPrice = 1e6;
+
+    collateralToken.mint(address(this), Price.calculate(initialLiquidity, unitPrice));
 
     MarketFactory.Params memory params = MarketFactory.Params(
-      address(this), "Flipside", "FLIP", "What does the fox say?", "", address(collateralToken), initialLiquidity
+      address(this),
+      "Flipside",
+      "FLIP",
+      "What does the fox say?",
+      "",
+      address(collateralToken),
+      unitPrice,
+      initialLiquidity
     );
     return flipside.createMarket(params);
   }
