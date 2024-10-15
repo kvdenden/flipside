@@ -29,3 +29,8 @@
 
 - forge script script/MarketFactory.s.sol:Deploy --broadcast --verify --slow --rpc-url base_sepolia
 - set MARKET_FACTORY_CONTRACT_ADDRESS env variable
+
+### deploy flipside gateway
+
+- forge script script/Flipside.s.sol:Deploy --broadcast --verify --slow --rpc-url base_sepolia
+- set FLIPSIDE_CONTRACT_ADDRESS env variable

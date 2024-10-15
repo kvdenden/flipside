@@ -4,7 +4,6 @@ import { Button, Card, CardBody, Progress } from "@nextui-org/react";
 
 import useMarket from "@/hooks/useMarket";
 import usePool from "@/hooks/usePool";
-import useToken from "@/hooks/useToken";
 
 type MarketCardProps = {
   marketId: `0x${string}`;

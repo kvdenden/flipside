@@ -5,7 +5,7 @@ import { isAddress, parseUnits, zeroAddress } from "viem";
 import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 
 import { erc20Abi } from "viem";
-import { marketFactoryAbi } from "@/web3/abi";
+import { flipsideAbi } from "@/web3/abi";
 
 import { Button, Input, Textarea, Card, CardBody, CardHeader, Autocomplete, AutocompleteItem } from "@nextui-org/react";
 
@@ -17,15 +17,17 @@ const popularTokens = [
   { name: "WETH", address: process.env.NEXT_PUBLIC_WETH },
 ];
 
-const MARKET_FACTORY_ADDRESS = process.env.NEXT_PUBLIC_MARKET_FACTORY_CONTRACT_ADDRESS;
-const MARKET_FACTORY_ABI = marketFactoryAbi;
+const FLIPSIDE_ADDRESS = process.env.NEXT_PUBLIC_FLIPSIDE_CONTRACT_ADDRESS;
+const FLIPSIDE_ABI = flipsideAbi;
 
 export default function CreateMarketForm() {
   const [formData, setFormData] = useState({
     pairName: "",
     pairSymbol: "",
+    title: "",
     description: "",
     collateralToken: "",
+    unitPrice: "",
     initialLiquidity: "",
   });
 
@@ -33,6 +35,11 @@ export default function CreateMarketForm() {
   const { connect } = useConnect();
 
   const { data: collateralToken } = useToken(formData.collateralToken as `0x${string}`);
+
+  const unitPrice = useMemo(
+    () => (collateralToken ? parseUnits(formData.unitPrice, collateralToken.decimals) : BigInt(0)),
+    [collateralToken, formData.unitPrice]
+  );
 
   const initialLiquidity = useMemo(
     () => (collateralToken ? parseUnits(formData.initialLiquidity, collateralToken.decimals) : BigInt(0)),
@@ -53,7 +60,7 @@ export default function CreateMarketForm() {
     address: formData.collateralToken as `0x${string}`,
     abi: erc20Abi,
     functionName: "allowance",
-    args: [address ?? zeroAddress, MARKET_FACTORY_ADDRESS],
+    args: [address ?? zeroAddress, FLIPSIDE_ADDRESS],
     query: {
       enabled: isConnected && isAddress(formData.collateralToken),
     },
@@ -94,25 +101,31 @@ export default function CreateMarketForm() {
       address: collateralToken.address,
       abi: erc20Abi,
       functionName: "approve",
-      args: [MARKET_FACTORY_ADDRESS, initialLiquidity],
+      args: [FLIPSIDE_ADDRESS, initialLiquidity],
     });
   };
 
   const handleCreateMarket = (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (!address) return;
     if (!collateralToken) return;
 
     createMarket.writeContract({
-      address: MARKET_FACTORY_ADDRESS,
-      abi: MARKET_FACTORY_ABI,
+      address: FLIPSIDE_ADDRESS,
+      abi: FLIPSIDE_ABI,
       functionName: "createMarket",
       args: [
-        formData.pairName,
-        formData.pairSymbol,
-        formData.description,
-        collateralToken.address,
-        initialLiquidity, // TODO: Update this to the correct decimal places
+        {
+          creator: address,
+          pairName: formData.pairName,
+          pairSymbol: formData.pairSymbol,
+          title: formData.title,
+          description: formData.description,
+          collateralToken: collateralToken.address,
+          unitPrice,
+          initialLiquidity,
+        },
       ],
     });
   };
@@ -138,7 +151,7 @@ export default function CreateMarketForm() {
   // else -> create market
 
   return (
-    <Card className="max-w-md mx-auto">
+    <Card>
       <CardHeader>
         <h2 className="text-2xl font-bold">Create New Market</h2>
       </CardHeader>
@@ -152,7 +165,7 @@ export default function CreateMarketForm() {
                 value={formData.pairName}
                 onChange={handleChange}
                 placeholder="Enter pair name"
-                required
+                isRequired
               />
             </div>
             <div className="col-span-1">
@@ -162,18 +175,27 @@ export default function CreateMarketForm() {
                 value={formData.pairSymbol}
                 onChange={handleChange}
                 placeholder="Symbol"
-                required
+                isRequired
                 className="text-sm"
               />
             </div>
           </div>
+          <Input
+            label="Title"
+            name="title"
+            value={formData.title}
+            onChange={handleChange}
+            placeholder="Title"
+            isRequired
+            className="text-sm"
+          />
           <Textarea
             label="Description"
             name="description"
             value={formData.description}
             onChange={handleChange}
             placeholder="Enter market description"
-            required
+            isRequired
           />
           <Autocomplete
             label="Collateral Token"
@@ -183,6 +205,7 @@ export default function CreateMarketForm() {
             selectedKey={formData.collateralToken}
             // onInputChange={handleCollateralTokenChange}
             allowsCustomValue={true}
+            isRequired
           >
             {(token) => (
               <AutocompleteItem key={token.address} textValue={token.name}>
@@ -192,12 +215,21 @@ export default function CreateMarketForm() {
           </Autocomplete>
           <Input
             type="number"
+            label="Unit Price"
+            name="unitPrice"
+            value={formData.unitPrice}
+            onChange={handleChange}
+            placeholder="Enter unit price"
+            isRequired
+          />
+          <Input
+            type="number"
             label="Initial Liquidity"
             name="initialLiquidity"
             value={formData.initialLiquidity}
             onChange={handleChange}
-            placeholder="Enter initial liquidity"
-            required
+            placeholder="Initial liquidity"
+            isRequired
           />
           {!isConnected && (
             <Button type="submit" color="primary" className="w-full" onClick={connect}>

@@ -1,4 +1,89 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Flipside
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+export const flipsideAbi = [
+  {
+    type: 'constructor',
+    inputs: [
+      { name: 'marketFactory_', internalType: 'address', type: 'address' },
+      { name: 'swapRouter_', internalType: 'address', type: 'address' },
+    ],
+    stateMutability: 'nonpayable',
+  },
+  {
+    type: 'function',
+    inputs: [
+      {
+        name: 'params',
+        internalType: 'struct MarketFactory.Params',
+        type: 'tuple',
+        components: [
+          { name: 'creator', internalType: 'address', type: 'address' },
+          { name: 'pairName', internalType: 'string', type: 'string' },
+          { name: 'pairSymbol', internalType: 'string', type: 'string' },
+          { name: 'title', internalType: 'string', type: 'string' },
+          { name: 'description', internalType: 'string', type: 'string' },
+          { name: 'collateralToken', internalType: 'address', type: 'address' },
+          { name: 'unitPrice', internalType: 'uint256', type: 'uint256' },
+          {
+            name: 'initialLiquidity',
+            internalType: 'uint256',
+            type: 'uint256',
+          },
+        ],
+      },
+    ],
+    name: 'createMarket',
+    outputs: [{ name: '', internalType: 'contract Market', type: 'address' }],
+    stateMutability: 'nonpayable',
+  },
+  {
+    type: 'function',
+    inputs: [],
+    name: 'marketFactory',
+    outputs: [
+      { name: '', internalType: 'contract MarketFactory', type: 'address' },
+    ],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
+    inputs: [
+      { name: 'market', internalType: 'contract Market', type: 'address' },
+      { name: 'to', internalType: 'address', type: 'address' },
+      { name: 'amount', internalType: 'uint256', type: 'uint256' },
+      { name: 'amountOutMin', internalType: 'uint256', type: 'uint256' },
+      { name: 'outcome', internalType: 'bool', type: 'bool' },
+    ],
+    name: 'mintOutcome',
+    outputs: [],
+    stateMutability: 'nonpayable',
+  },
+  {
+    type: 'function',
+    inputs: [
+      { name: 'market', internalType: 'contract Market', type: 'address' },
+      { name: 'to', internalType: 'address', type: 'address' },
+      { name: 'amount', internalType: 'uint256', type: 'uint256' },
+    ],
+    name: 'mintPair',
+    outputs: [],
+    stateMutability: 'nonpayable',
+  },
+  {
+    type: 'function',
+    inputs: [],
+    name: 'swapRouter',
+    outputs: [
+      { name: '', internalType: 'contract IV3SwapRouter', type: 'address' },
+    ],
+    stateMutability: 'view',
+  },
+  { type: 'error', inputs: [], name: 'MathOverflowedMulDiv' },
+] as const
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Market
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -13,8 +98,10 @@ export const marketAbi = [
         components: [
           { name: 'pairName', internalType: 'string', type: 'string' },
           { name: 'pairSymbol', internalType: 'string', type: 'string' },
+          { name: 'title', internalType: 'string', type: 'string' },
           { name: 'description', internalType: 'string', type: 'string' },
           { name: 'collateralToken', internalType: 'address', type: 'address' },
+          { name: 'unitPrice', internalType: 'uint256', type: 'uint256' },
           { name: 'resolver', internalType: 'address', type: 'address' },
         ],
       },
@@ -63,6 +150,13 @@ export const marketAbi = [
   },
   {
     type: 'function',
+    inputs: [{ name: 'amount', internalType: 'uint256', type: 'uint256' }],
+    name: 'price',
+    outputs: [{ name: '', internalType: 'uint256', type: 'uint256' }],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
     inputs: [
       { name: 'to', internalType: 'address', type: 'address' },
       { name: 'amount', internalType: 'uint256', type: 'uint256' },
@@ -101,9 +195,23 @@ export const marketAbi = [
   {
     type: 'function',
     inputs: [],
-    name: 'startResolution',
-    outputs: [],
-    stateMutability: 'nonpayable',
+    name: 'title',
+    outputs: [{ name: '', internalType: 'string', type: 'string' }],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
+    inputs: [],
+    name: 'totalVolume',
+    outputs: [{ name: '', internalType: 'uint256', type: 'uint256' }],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
+    inputs: [],
+    name: 'unitPrice',
+    outputs: [{ name: '', internalType: 'uint256', type: 'uint256' }],
+    stateMutability: 'view',
   },
   {
     type: 'event',
@@ -150,32 +258,5 @@ export const marketAbi = [
     ],
     name: 'Settled',
   },
-] as const
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// MarketFactory
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-export const marketFactoryAbi = [
-  {
-    type: 'constructor',
-    inputs: [
-      { name: 'resolver_', internalType: 'address', type: 'address' },
-      { name: 'poolManager_', internalType: 'address', type: 'address' },
-    ],
-    stateMutability: 'nonpayable',
-  },
-  {
-    type: 'function',
-    inputs: [
-      { name: 'pairName', internalType: 'string', type: 'string' },
-      { name: 'pairSymbol', internalType: 'string', type: 'string' },
-      { name: 'description', internalType: 'string', type: 'string' },
-      { name: 'collateralToken', internalType: 'address', type: 'address' },
-      { name: 'initialLiquidity', internalType: 'uint256', type: 'uint256' },
-    ],
-    name: 'createMarket',
-    outputs: [{ name: '', internalType: 'address', type: 'address' }],
-    stateMutability: 'nonpayable',
-  },
+  { type: 'error', inputs: [], name: 'MathOverflowedMulDiv' },
 ] as const

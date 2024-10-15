@@ -20,7 +20,9 @@ export default function RootLayout({
       <body className="min-h-screen">
         <Providers>
           <Header />
-          <main>{children}</main>
+          <div className="container mx-auto">
+            <main>{children}</main>
+          </div>
         </Providers>
       </body>
     </html>

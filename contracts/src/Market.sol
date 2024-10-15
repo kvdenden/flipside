@@ -58,6 +58,7 @@ contract Market {
     unitPrice = params.unitPrice;
 
     _resolver = Resolver(params.resolver);
+    _resolutionId = _resolver.initializeQuery(description);
   }
 
   function mint(address to, uint256 amount) external {
@@ -94,18 +95,12 @@ contract Market {
     emit Settled(msg.sender, to, amount);
   }
 
-  function startResolution() external {
-    require(_resolutionId == 0, "Already started resolution");
-
-    _resolutionId = _resolver.initializeQuery(description);
-  }
-
   function price(uint256 amount) public view returns (uint256) {
     return Price.calculate(amount, unitPrice);
   }
 
   function resolved() public view returns (bool) {
-    return _resolutionId != 0 && _resolver.resolved(_resolutionId);
+    return _resolver.resolved(_resolutionId);
   }
 
   function outcome() public view whenResolved returns (Outcome) {
