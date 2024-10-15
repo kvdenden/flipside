@@ -4,6 +4,7 @@ import { Button, Card, CardBody, Progress } from "@nextui-org/react";
 
 import useMarket from "@/hooks/useMarket";
 import usePool from "@/hooks/usePool";
+import ApprovalButton from "./ApprovalButton";
 
 type MarketCardProps = {
   marketId: `0x${string}`;
@@ -35,6 +36,9 @@ export default function MarketCard({ marketId }: MarketCardProps) {
           <Button color="danger" className="flex-1">
             Buy No ↓
           </Button>
+        </div>
+        <div className="flex gap-2 mb-4">
+          <ApprovalButton token={market.collateralToken} amount={BigInt(1e18)} />
         </div>
         <div className="flex justify-between text-sm text-gray-400">
           <span>$17.2m Vol.</span>
