@@ -10,6 +10,7 @@ namespace NodeJS {
     NEXT_PUBLIC_USDC: `0x${string}`;
     NEXT_PUBLIC_WETH: `0x${string}`;
 
+    NEXT_PUBLIC_MARKET_FACTORY_CONTRACT_ADDRESS: `0x${string}`;
     NEXT_PUBLIC_FLIPSIDE_CONTRACT_ADDRESS: `0x${string}`;
   }
 }

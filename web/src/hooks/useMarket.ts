@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import { hexToBigInt } from "viem";
 
 export enum Outcome {
   YES,
@@ -15,8 +16,10 @@ export type Pool = {
 
 export type Market = {
   id: `0x${string}`;
+  title: string;
   description: string;
   collateralToken: `0x${string}`;
+  unitPrice: bigint;
   longToken: `0x${string}`;
   shortToken: `0x${string}`;
   pool: Pool;
@@ -32,13 +35,15 @@ const fetchMarket = async (marketId: `0x${string}`): Promise<Market | undefined>
 
     return {
       id: market.id,
+      title: market.title,
       description: market.description,
       collateralToken: market.collateralToken,
+      unitPrice: hexToBigInt(market.unitPrice),
       longToken: market.longToken,
       shortToken: market.shortToken,
       pool: {
         id: pool.id,
-        initialLiquidity: pool.initialLiquidity,
+        initialLiquidity: hexToBigInt(pool.initialLiquidity),
       },
 
       resolved: market.resolved,

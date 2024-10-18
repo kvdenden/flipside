@@ -42,9 +42,11 @@ export default function CreateMarketForm() {
   );
 
   const initialLiquidity = useMemo(
-    () => (collateralToken ? parseUnits(formData.initialLiquidity, collateralToken.decimals) : BigInt(0)),
+    () => (collateralToken ? parseUnits(formData.initialLiquidity, 18) : BigInt(0)),
     [collateralToken, formData.initialLiquidity]
   );
+
+  const price = useMemo(() => (unitPrice * initialLiquidity) / BigInt(1e18), [unitPrice, initialLiquidity]);
 
   const { data: balance, refetch: refetchBalance } = useReadContract({
     address: formData.collateralToken as `0x${string}`,
@@ -85,12 +87,18 @@ export default function CreateMarketForm() {
     }
   }, [createMarketReceipt.isSuccess, refetchBalance, refetchAllowance]);
 
-  const sufficientBalance = useMemo(() => !!balance && balance >= initialLiquidity, [balance, initialLiquidity]);
+  const sufficientBalance = useMemo(() => !!balance && balance >= price, [balance, price]);
 
-  const sufficientAllowance = useMemo(
-    () => !!allowance && allowance >= initialLiquidity,
-    [allowance, initialLiquidity]
-  );
+  const sufficientAllowance = useMemo(() => !!allowance && allowance >= price, [allowance, price]);
+
+  // console.log("collateralToken", collateralToken);
+  // console.log("unitPrice", unitPrice);
+  // console.log("initialLiquidity", initialLiquidity);
+  // console.log("price", price);
+  // console.log("balance", balance);
+  // console.log("allowance", allowance);
+  // console.log("sufficientBalance", sufficientBalance);
+  // console.log("sufficientAllowance", sufficientAllowance);
 
   const handleApprove = (e: React.FormEvent) => {
     e.preventDefault();
@@ -101,11 +109,12 @@ export default function CreateMarketForm() {
       address: collateralToken.address,
       abi: erc20Abi,
       functionName: "approve",
-      args: [FLIPSIDE_ADDRESS, initialLiquidity],
+      args: [FLIPSIDE_ADDRESS, price],
     });
   };
 
   const handleCreateMarket = (e: React.FormEvent) => {
+    console.log("create market", address, formData, unitPrice, initialLiquidity);
     e.preventDefault();
 
     if (!address) return;

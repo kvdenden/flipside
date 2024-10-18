@@ -7,7 +7,7 @@ const fetchMarkets = async (): Promise<`0x${string}`[]> => {
   if (response.ok) {
     const markets = await response.json();
 
-    return markets.map((market: any) => market.id);
+    return markets.map((market: { id: `0x${string}` }) => market.id);
   }
 
   return [];
