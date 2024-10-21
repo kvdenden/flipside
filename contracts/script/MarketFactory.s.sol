@@ -13,11 +13,12 @@ contract Deploy is Script {
     uint256 privateKey = vm.envUint("PRIVATE_KEY");
 
     address resolver = vm.envAddress("RESOLVER_CONTRACT_ADDRESS");
+    address rewardManager = vm.envAddress("REWARD_MANAGER_CONTRACT_ADDRESS");
     address poolManager = vm.envAddress("POOL_MANAGER_CONTRACT_ADDRESS");
 
     vm.startBroadcast(privateKey);
 
-    marketFactory = new MarketFactory(resolver, poolManager);
+    marketFactory = new MarketFactory(resolver, rewardManager, poolManager);
     console.log("MarketFactory deployed at:", address(marketFactory));
 
     vm.stopBroadcast();

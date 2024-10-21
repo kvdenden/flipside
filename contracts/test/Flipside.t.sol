@@ -9,6 +9,7 @@ import { Price } from "../src/lib/Price.sol";
 import { Market } from "../src/Market.sol";
 
 import { Resolver } from "../src/Resolver.sol";
+import { RewardManager } from "../src/RewardManager.sol";
 import { PoolManager } from "../src/PoolManager.sol";
 import { MarketFactory } from "../src/MarketFactory.sol";
 
@@ -29,8 +30,9 @@ contract FlipsideTest is Test {
     collateralToken = new MockERC20();
 
     Resolver resolver = new Resolver(oo, usdc);
+    RewardManager rewardManager = new RewardManager(address(this), 5_000);
     PoolManager poolManager = new PoolManager(factory, positionManager);
-    MarketFactory marketFactory = new MarketFactory(address(resolver), address(poolManager));
+    MarketFactory marketFactory = new MarketFactory(address(resolver), address(rewardManager), address(poolManager));
 
     flipside = new Flipside(address(marketFactory), swapRouter);
     collateralToken.approve(address(flipside), type(uint256).max);
@@ -41,7 +43,9 @@ contract FlipsideTest is Test {
     Market market = _createMarket(initialLiquidity);
 
     assertEq(market.totalVolume(), initialLiquidity);
-    assertEq(collateralToken.balanceOf(address(market)), market.price(initialLiquidity));
+    assertEq(
+      collateralToken.balanceOf(address(market)), market.price(initialLiquidity) - market.marketReward(initialLiquidity)
+    );
   }
 
   function test_mintPair() public {
@@ -54,7 +58,10 @@ contract FlipsideTest is Test {
     flipside.mintPair(market, address(this), amount);
 
     assertEq(market.totalVolume(), initialLiquidity + amount);
-    assertEq(collateralToken.balanceOf(address(market)), market.price(initialLiquidity + amount));
+    assertEq(
+      collateralToken.balanceOf(address(market)),
+      market.price(initialLiquidity + amount) - market.marketReward(initialLiquidity + amount)
+    );
 
     assertEq(market.longToken().balanceOf(address(this)), amount);
     assertEq(market.shortToken().balanceOf(address(this)), amount);
@@ -70,7 +77,10 @@ contract FlipsideTest is Test {
     flipside.mintOutcome(market, address(this), amount, 0, true);
 
     assertEq(market.totalVolume(), initialLiquidity + amount);
-    assertEq(collateralToken.balanceOf(address(market)), market.price(initialLiquidity + amount));
+    assertEq(
+      collateralToken.balanceOf(address(market)),
+      market.price(initialLiquidity + amount) - market.marketReward(initialLiquidity + amount)
+    );
 
     assertGt(market.longToken().balanceOf(address(this)), amount);
     assertEq(market.shortToken().balanceOf(address(this)), 0);

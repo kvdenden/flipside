@@ -6,6 +6,7 @@ import { Test, console } from "forge-std/Test.sol";
 import { MockERC20 } from "./mocks/MockERC20.sol";
 
 import { Resolver } from "../src/Resolver.sol";
+import { RewardManager } from "../src/RewardManager.sol";
 import { PoolManager } from "../src/PoolManager.sol";
 
 import { Market } from "../src/Market.sol";
@@ -26,8 +27,17 @@ contract PoolManagerTest is Test {
     collateralToken = new MockERC20();
 
     Resolver resolver = new Resolver(oo, usdc);
+    RewardManager rewardManager = new RewardManager(address(this), 5_000);
     Market.MarketParams memory params = Market.MarketParams(
-      "Flipside", "FLIP", "What does the fox say?", "", address(collateralToken), 1e6, address(resolver)
+      address(this),
+      "Flipside",
+      "FLIP",
+      "What does the fox say?",
+      "",
+      address(collateralToken),
+      1e6,
+      address(resolver),
+      address(rewardManager)
     );
     market = new Market(params);
 

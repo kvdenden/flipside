@@ -25,6 +25,11 @@
 - forge script script/PoolManager.s.sol:Deploy --broadcast --verify --slow --rpc-url base_sepolia
 - set POOL_MANAGER_CONTRACT_ADDRESS env variable
 
+### deploy reward manager
+
+- forge script script/RewardManager.s.sol:Deploy --broadcast --verify --slow --rpc-url base_sepolia
+- set REWARD_MANAGER_CONTRACT_ADDRESS env variable
+
 ### deploy market factory
 
 - forge script script/MarketFactory.s.sol:Deploy --broadcast --verify --slow --rpc-url base_sepolia

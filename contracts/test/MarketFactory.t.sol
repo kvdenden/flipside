@@ -6,6 +6,7 @@ import { Test, console } from "forge-std/Test.sol";
 import { MockERC20 } from "./mocks/MockERC20.sol";
 
 import { Resolver } from "../src/Resolver.sol";
+import { RewardManager } from "../src/RewardManager.sol";
 import { PoolManager } from "../src/PoolManager.sol";
 
 import { MarketFactory } from "../src/MarketFactory.sol";
@@ -14,6 +15,7 @@ contract MarketFactoryTest is Test {
   MockERC20 collateralToken;
 
   Resolver resolver;
+  RewardManager rewardManager;
   PoolManager poolManager;
   MarketFactory marketFactory;
 
@@ -26,8 +28,9 @@ contract MarketFactoryTest is Test {
     collateralToken = new MockERC20();
 
     resolver = new Resolver(oo, usdc);
+    rewardManager = new RewardManager(address(this), 5_000);
     poolManager = new PoolManager(factory, positionManager);
-    marketFactory = new MarketFactory(address(resolver), address(poolManager));
+    marketFactory = new MarketFactory(address(resolver), address(rewardManager), address(poolManager));
   }
 
   function test_createMarket() public {

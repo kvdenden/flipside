@@ -10,6 +10,7 @@ import { INonfungiblePositionManager } from "@uniswap/v3-periphery/contracts/int
 import { MockERC20 } from "./mocks/MockERC20.sol";
 
 import { Resolver } from "../src/Resolver.sol";
+import { RewardManager } from "../src/RewardManager.sol";
 import { PoolManager } from "../src/PoolManager.sol";
 
 import { Market } from "../src/Market.sol";
@@ -20,7 +21,9 @@ contract MarketTest is Test {
 
   MockERC20 collateralToken;
 
+  address treasury;
   Resolver resolver;
+  RewardManager rewardManager;
   Market market;
 
   function setUp() public {
@@ -31,10 +34,21 @@ contract MarketTest is Test {
     positionManager = INonfungiblePositionManager(vm.envAddress("UNISWAP_V3POSITION_MANAGER"));
 
     collateralToken = new MockERC20();
+
+    treasury = vm.addr(0x1111);
     resolver = new Resolver(oo, usdc);
+    rewardManager = new RewardManager(treasury, 7500);
 
     Market.MarketParams memory params = Market.MarketParams(
-      "Flipside", "FLIP", "What does the fox say?", "", address(collateralToken), 1e6, address(resolver)
+      address(this),
+      "Flipside",
+      "FLIP",
+      "What does the fox say?",
+      "",
+      address(collateralToken),
+      1e6,
+      address(resolver),
+      address(rewardManager)
     );
     market = new Market(params);
   }
@@ -45,7 +59,9 @@ contract MarketTest is Test {
     market.mint(address(this), 100 * 1e18);
 
     assertEq(market.totalVolume(), 100 * 1e18);
-    assertEq(collateralToken.balanceOf(address(market)), 100 * 1e6);
+    assertEq(collateralToken.balanceOf(address(market)), 99 * 1e6); // 99%
+    assertEq(collateralToken.balanceOf(treasury), 250000); // 0.25%
+    assertEq(collateralToken.balanceOf(address(rewardManager)), 750000); // 0.75%
 
     assertEq(market.longToken().balanceOf(address(this)), 100 * 1e18);
     assertEq(market.shortToken().balanceOf(address(this)), 100 * 1e18);

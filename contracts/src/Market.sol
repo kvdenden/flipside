@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.23;
 
+import { Math } from "@openzeppelin/contracts/utils/math/Math.sol";
+import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 import { Price } from "./lib/Price.sol";
@@ -9,8 +11,14 @@ import { Resolver } from "./Resolver.sol";
 import { Outcome } from "./Outcome.sol";
 import { OutcomeToken } from "./OutcomeToken.sol";
 
+import { RewardManager } from "./RewardManager.sol";
+
 contract Market {
+  using Math for uint256;
+  using SafeERC20 for IERC20;
+
   struct MarketParams {
+    address creator;
     string pairName;
     string pairSymbol;
     string title;
@@ -18,7 +26,10 @@ contract Market {
     address collateralToken;
     uint256 unitPrice;
     address resolver;
+    address rewardManager;
   }
+
+  address public creator;
 
   string public title;
   string public description;
@@ -34,6 +45,8 @@ contract Market {
 
   Resolver private _resolver;
   bytes32 private _resolutionId;
+
+  RewardManager private _rewardManager;
 
   event Minted(address indexed from, address indexed to, uint256 amount);
   event Redeemed(address indexed from, address indexed to, uint256 amount);
@@ -52,6 +65,7 @@ contract Market {
       address(this), string.concat(params.pairName, " - Short"), string.concat(params.pairSymbol, "SHORT")
     );
 
+    creator = params.creator;
     title = params.title;
     description = params.description;
     collateralToken = IERC20(params.collateralToken);
@@ -59,13 +73,19 @@ contract Market {
 
     _resolver = Resolver(params.resolver);
     _resolutionId = _resolver.initializeQuery(description);
+
+    _rewardManager = RewardManager(params.rewardManager);
   }
 
   function mint(address to, uint256 amount) external {
     require(amount % 1e18 == 0, "Invalid amount");
 
     uint256 collateralAmount = price(amount);
-    collateralToken.transferFrom(msg.sender, address(this), collateralAmount);
+    collateralToken.safeTransferFrom(msg.sender, address(this), collateralAmount);
+
+    uint256 reward = marketReward(amount);
+    collateralToken.approve(address(_rewardManager), reward);
+    _rewardManager.collect(this, reward);
 
     longToken.mint(to, amount);
     shortToken.mint(to, amount);
@@ -88,7 +108,7 @@ contract Market {
     shortToken.burn(msg.sender, shortAmount);
 
     Outcome outcome_ = outcome();
-    amount = _calculatePayoutAmount(outcome_, longAmount, shortAmount);
+    amount = _settlementAmount(outcome_, longAmount, shortAmount);
 
     _payout(to, amount);
 
@@ -97,6 +117,10 @@ contract Market {
 
   function price(uint256 amount) public view returns (uint256) {
     return Price.calculate(amount, unitPrice);
+  }
+
+  function marketReward(uint256 amount) public view returns (uint256) {
+    return price(amount).ceilDiv(100);
   }
 
   function resolved() public view returns (bool) {
@@ -108,14 +132,12 @@ contract Market {
   }
 
   function _payout(address to, uint256 amount) private {
-    collateralToken.transfer(to, price(amount));
+    uint256 payoutAmount = price(amount) - marketReward(amount);
+
+    collateralToken.safeTransfer(to, payoutAmount);
   }
 
-  function _calculatePayoutAmount(Outcome outcome_, uint256 longAmount, uint256 shortAmount)
-    private
-    pure
-    returns (uint256)
-  {
+  function _settlementAmount(Outcome outcome_, uint256 longAmount, uint256 shortAmount) private pure returns (uint256) {
     if (outcome_ == Outcome.Yes) return longAmount;
     if (outcome_ == Outcome.No) return shortAmount;
 

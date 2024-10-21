@@ -5,6 +5,7 @@ import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 import { Market } from "./Market.sol";
 import { PoolManager } from "./PoolManager.sol";
+import { RewardManager } from "./RewardManager.sol";
 
 contract MarketFactory {
   struct Params {
@@ -19,6 +20,8 @@ contract MarketFactory {
   }
 
   address private immutable _resolver;
+  address private immutable _rewardManager;
+
   PoolManager private immutable _poolManager;
 
   event MarketCreated(
@@ -29,21 +32,24 @@ contract MarketFactory {
     uint256 initialLiquidity
   );
 
-  constructor(address resolver_, address poolManager_) {
+  constructor(address resolver_, address rewardManager_, address poolManager_) {
     _resolver = resolver_;
+    _rewardManager = rewardManager_;
 
     _poolManager = PoolManager(poolManager_);
   }
 
   function createMarket(Params memory params) external returns (Market) {
     Market.MarketParams memory marketParams = Market.MarketParams(
+      params.creator,
       params.pairName,
       params.pairSymbol,
       params.title,
       params.description,
       params.collateralToken,
       params.unitPrice,
-      _resolver
+      _resolver,
+      _rewardManager
     );
     Market market = new Market(marketParams);
 

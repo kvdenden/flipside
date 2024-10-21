@@ -1,13 +1,12 @@
 "use client";
 
+import { useState } from "react";
 import { Button, Card, CardBody, Progress, useDisclosure } from "@nextui-org/react";
 
 import useMarket, { Outcome } from "@/hooks/useMarket";
 import usePool from "@/hooks/usePool";
 
 import MintModal from "./MintModal";
-import { useState } from "react";
-// import ApprovalButton from "./ApprovalButton";
 
 type MarketCardProps = {
   marketId: `0x${string}`;
