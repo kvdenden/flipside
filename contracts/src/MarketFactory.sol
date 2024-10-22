@@ -3,9 +3,8 @@ pragma solidity ^0.8.23;
 
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
+import { IPoolManager } from "./interfaces/IPoolManager.sol";
 import { Market } from "./Market.sol";
-import { PoolManager } from "./PoolManager.sol";
-import { RewardManager } from "./RewardManager.sol";
 
 contract MarketFactory {
   struct Params {
@@ -22,7 +21,7 @@ contract MarketFactory {
   address private immutable _resolver;
   address private immutable _rewardManager;
 
-  PoolManager private immutable _poolManager;
+  IPoolManager private immutable _poolManager;
 
   event MarketCreated(
     address indexed market,
@@ -36,7 +35,7 @@ contract MarketFactory {
     _resolver = resolver_;
     _rewardManager = rewardManager_;
 
-    _poolManager = PoolManager(poolManager_);
+    _poolManager = IPoolManager(poolManager_);
   }
 
   function createMarket(Params memory params) external returns (Market) {

@@ -5,10 +5,11 @@ import { Math } from "@openzeppelin/contracts/utils/math/Math.sol";
 import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
+import { IRewardManager } from "./interfaces/IRewardManager.sol";
 import { Market } from "./Market.sol";
 import { Outcome } from "./Outcome.sol";
 
-contract RewardManager {
+contract RewardManager is IRewardManager {
   using SafeERC20 for IERC20;
   using Math for uint256;
 
@@ -25,7 +26,7 @@ contract RewardManager {
     _CREATOR_REWARD = creatorReward;
   }
 
-  function collect(Market market, uint256 amount) external {
+  function collect(Market market, uint256 amount) external override {
     require(msg.sender == address(market), "Invalid caller");
 
     IERC20 collateralToken = market.collateralToken();
@@ -41,7 +42,7 @@ contract RewardManager {
     emit Collect(address(market), amount);
   }
 
-  function claim(Market market) external {
+  function claim(Market market) external override {
     require(market.resolved(), "Market not resolved");
 
     IERC20 collateralToken = market.collateralToken();

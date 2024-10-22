@@ -7,11 +7,11 @@ import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 import { Price } from "./lib/Price.sol";
 
-import { Resolver } from "./Resolver.sol";
+import { IResolver } from "./interfaces/IResolver.sol";
+import { IRewardManager } from "./interfaces/IRewardManager.sol";
+
 import { Outcome } from "./Outcome.sol";
 import { OutcomeToken } from "./OutcomeToken.sol";
-
-import { RewardManager } from "./RewardManager.sol";
 
 contract Market {
   using Math for uint256;
@@ -43,10 +43,10 @@ contract Market {
 
   uint256 public totalVolume;
 
-  Resolver private _resolver;
+  IResolver private _resolver;
   bytes32 private _resolutionId;
 
-  RewardManager private _rewardManager;
+  IRewardManager private _rewardManager;
 
   event Minted(address indexed from, address indexed to, uint256 amount);
   event Redeemed(address indexed from, address indexed to, uint256 amount);
@@ -71,10 +71,10 @@ contract Market {
     collateralToken = IERC20(params.collateralToken);
     unitPrice = params.unitPrice;
 
-    _resolver = Resolver(params.resolver);
+    _resolver = IResolver(params.resolver);
     _resolutionId = _resolver.initializeQuery(description);
 
-    _rewardManager = RewardManager(params.rewardManager);
+    _rewardManager = IRewardManager(params.rewardManager);
   }
 
   function mint(address to, uint256 amount) external {
@@ -121,6 +121,10 @@ contract Market {
 
   function marketReward(uint256 amount) public view returns (uint256) {
     return price(amount).ceilDiv(100);
+  }
+
+  function resolve(Outcome outcome_) external {
+    _resolver.assertOutcome(_resolutionId, outcome_);
   }
 
   function resolved() public view returns (bool) {

@@ -7,10 +7,11 @@ import { Strings } from "@openzeppelin/contracts/utils/Strings.sol";
 import { OptimisticOracleV3Interface } from
   "@uma/core/contracts/optimistic-oracle-v3/interfaces/OptimisticOracleV3Interface.sol";
 
+import { IResolver } from "./interfaces/IResolver.sol";
 import { Outcome } from "./Outcome.sol";
 import { Outcomes } from "./lib/Outcomes.sol";
 
-contract Resolver {
+contract Resolver is IResolver {
   struct Query {
     bool resolved;
     Outcome outcome;
@@ -37,7 +38,7 @@ contract Resolver {
     currency = IERC20(currency_);
   }
 
-  function initializeQuery(string memory description_) external returns (bytes32 queryId) {
+  function initializeQuery(string memory description_) external override returns (bytes32 queryId) {
     queryId = keccak256(abi.encode(block.number, description_)); // TODO: check if queryId is unique
 
     Query storage query = queries[queryId];
@@ -46,7 +47,7 @@ contract Resolver {
     emit QueryInitialized(queryId);
   }
 
-  function assertOutcome(bytes32 queryId, Outcome outcome_) external returns (bytes32 assertionId) {
+  function assertOutcome(bytes32 queryId, Outcome outcome_) external override returns (bytes32 assertionId) {
     require(!queries[queryId].resolved, "Market resolved");
 
     bytes memory claim = _claim(queryId, outcome_);
@@ -75,15 +76,15 @@ contract Resolver {
 
   function assertionDisputedCallback(bytes32 assertionId) external { }
 
-  function resolved(bytes32 queryId) public view returns (bool) {
+  function resolved(bytes32 queryId) public view override returns (bool) {
     return queries[queryId].resolved;
   }
 
-  function outcome(bytes32 queryId) public view returns (Outcome) {
+  function outcome(bytes32 queryId) public view override returns (Outcome) {
     return queries[queryId].outcome;
   }
 
-  function description(bytes32 queryId) public view returns (string memory) {
+  function description(bytes32 queryId) public view override returns (string memory) {
     return queries[queryId].description;
   }
 

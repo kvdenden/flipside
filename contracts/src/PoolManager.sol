@@ -9,9 +9,10 @@ import { TickMath } from "@uniswap/v3-core/contracts/libraries/TickMath.sol";
 
 import { INonfungiblePositionManager } from "@uniswap/v3-periphery/contracts/interfaces/INonfungiblePositionManager.sol";
 
+import { IPoolManager } from "./interfaces/IPoolManager.sol";
 import { Market } from "./Market.sol";
 
-contract PoolManager {
+contract PoolManager is IPoolManager {
   uint24 public constant FEE = 10_000;
 
   IUniswapV3Factory public immutable factory;
@@ -24,14 +25,14 @@ contract PoolManager {
     positionManager = INonfungiblePositionManager(positionManager_);
   }
 
-  function createPool(Market market, uint256 initialLiquidity) external returns (address pool) {
+  function createPool(Market market, uint256 initialLiquidity) external override returns (address pool) {
     (address token0, address token1) = _tokens(market);
 
     pool = positionManager.createAndInitializePoolIfNecessary(token0, token1, FEE, 2 ** 96);
     _liquidity[market] = _mintLiquidity(market, initialLiquidity);
   }
 
-  function getPool(Market market) external view returns (address pool) {
+  function getPool(Market market) external view override returns (address pool) {
     pool = _pool(market);
   }
 
