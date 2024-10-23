@@ -11,6 +11,7 @@ export const marketAbi = [
         internalType: 'struct Market.MarketParams',
         type: 'tuple',
         components: [
+          { name: 'creator', internalType: 'address', type: 'address' },
           { name: 'pairName', internalType: 'string', type: 'string' },
           { name: 'pairSymbol', internalType: 'string', type: 'string' },
           { name: 'title', internalType: 'string', type: 'string' },
@@ -18,6 +19,7 @@ export const marketAbi = [
           { name: 'collateralToken', internalType: 'address', type: 'address' },
           { name: 'unitPrice', internalType: 'uint256', type: 'uint256' },
           { name: 'resolver', internalType: 'address', type: 'address' },
+          { name: 'rewardManager', internalType: 'address', type: 'address' },
         ],
       },
     ],
@@ -28,6 +30,13 @@ export const marketAbi = [
     inputs: [],
     name: 'collateralToken',
     outputs: [{ name: '', internalType: 'contract IERC20', type: 'address' }],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
+    inputs: [],
+    name: 'creator',
+    outputs: [{ name: '', internalType: 'address', type: 'address' }],
     stateMutability: 'view',
   },
   {
@@ -44,6 +53,13 @@ export const marketAbi = [
     outputs: [
       { name: '', internalType: 'contract OutcomeToken', type: 'address' },
     ],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
+    inputs: [{ name: 'amount', internalType: 'uint256', type: 'uint256' }],
+    name: 'marketReward',
+    outputs: [{ name: '', internalType: 'uint256', type: 'uint256' }],
     stateMutability: 'view',
   },
   {
@@ -77,6 +93,13 @@ export const marketAbi = [
       { name: 'amount', internalType: 'uint256', type: 'uint256' },
     ],
     name: 'redeem',
+    outputs: [],
+    stateMutability: 'nonpayable',
+  },
+  {
+    type: 'function',
+    inputs: [{ name: 'outcome_', internalType: 'enum Outcome', type: 'uint8' }],
+    name: 'resolve',
     outputs: [],
     stateMutability: 'nonpayable',
   },
@@ -173,7 +196,23 @@ export const marketAbi = [
     ],
     name: 'Settled',
   },
+  {
+    type: 'error',
+    inputs: [{ name: 'target', internalType: 'address', type: 'address' }],
+    name: 'AddressEmptyCode',
+  },
+  {
+    type: 'error',
+    inputs: [{ name: 'account', internalType: 'address', type: 'address' }],
+    name: 'AddressInsufficientBalance',
+  },
+  { type: 'error', inputs: [], name: 'FailedInnerCall' },
   { type: 'error', inputs: [], name: 'MathOverflowedMulDiv' },
+  {
+    type: 'error',
+    inputs: [{ name: 'token', internalType: 'address', type: 'address' }],
+    name: 'SafeERC20FailedOperation',
+  },
 ] as const
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -185,6 +224,7 @@ export const marketFactoryAbi = [
     type: 'constructor',
     inputs: [
       { name: 'resolver_', internalType: 'address', type: 'address' },
+      { name: 'rewardManager_', internalType: 'address', type: 'address' },
       { name: 'poolManager_', internalType: 'address', type: 'address' },
     ],
     stateMutability: 'nonpayable',

@@ -34,8 +34,9 @@ export default function MarketCard({ marketId }: MarketCardProps) {
       <Card className="w-full bg-gray-800 text-white">
         <CardBody className="p-4">
           <div className="flex flex-col mb-2">
-            <h3 className="text-lg font-semibold mb-2">{market.description}</h3>
-            <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold mb-2">{market.title}</h3>
+            <p className="text-sm text-gray-400">{market.description}</p>
+            <div className="flex items-center justify-between py-3">
               <span className="text-sm">Yes</span>
               <span className="text-sm">{yesPercentage}%</span>
             </div>
