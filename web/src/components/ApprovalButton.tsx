@@ -1,22 +1,31 @@
 "use client";
 
+import { useEffect } from "react";
+
 import { erc20Abi } from "viem";
 import { useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 
 import { Button, ButtonProps } from "@nextui-org/react";
 
-const FLIPSIDE_ADDRESS = process.env.NEXT_PUBLIC_FLIPSIDE_CONTRACT_ADDRESS;
-
-type ApprovalButtonProps = ButtonProps & {
+type ApprovalButtonProps = Omit<ButtonProps, "children"> & {
   token: `0x${string}`;
   amount: bigint;
+  spender: `0x${string}`;
+  onApprove?: () => void;
 };
 
-export default function ApprovalButton({ token, amount, ...props }: ApprovalButtonProps) {
+export default function ApprovalButton(props: ApprovalButtonProps) {
+  const { token, amount, spender, onApprove = () => {}, ...buttonProps } = props;
   const { isConnected } = useAccount();
 
   const approve = useWriteContract();
   const approveReceipt = useWaitForTransactionReceipt({ hash: approve.data });
+
+  useEffect(() => {
+    if (approveReceipt.isSuccess) {
+      onApprove();
+    }
+  }, [onApprove, approveReceipt]);
 
   const isDisabled = !isConnected;
   const isLoading = approve.isPending || approveReceipt.isLoading;
@@ -28,12 +37,12 @@ export default function ApprovalButton({ token, amount, ...props }: ApprovalButt
           address: token,
           abi: erc20Abi,
           functionName: "approve",
-          args: [FLIPSIDE_ADDRESS, amount],
+          args: [spender, amount],
         });
       }}
       isDisabled={isDisabled}
       isLoading={isLoading}
-      {...props}
+      {...buttonProps}
     >
       {isLoading ? "Approving..." : "Approve"}
     </Button>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { Button, Card, CardBody, Progress, useDisclosure } from "@nextui-org/react";
 
 import useMarket, { Outcome } from "@/hooks/useMarket";
@@ -14,20 +14,25 @@ type MarketCardProps = {
 
 export default function MarketCard({ marketId }: MarketCardProps) {
   const { data: market } = useMarket(marketId);
-  const { data: pool } = usePool(marketId);
+  const { data: pool, refetch: refetchPool } = usePool(marketId);
 
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
   const [outcome, setOutcome] = useState<Outcome>(Outcome.YES);
 
-  const handleMint = (outcome: Outcome) => {
+  const openMintDialog = (outcome: Outcome) => {
     setOutcome(outcome);
     onOpen();
   };
 
+  const onMint = useCallback(() => {
+    refetchPool();
+  }, [refetchPool]);
+
   if (!market) return null;
 
-  const yesPercentage = pool && parseInt(pool.token0Price.add(1).invert().multiply(100).toFixed(0));
+  const longPrice = pool && (market.longToken == pool.token0.address ? pool.token0Price : pool.token1Price);
+  const yesPercentage = longPrice && parseInt(longPrice.divide(longPrice.add(1)).multiply(100).toFixed(0));
 
   return (
     <>
@@ -43,11 +48,11 @@ export default function MarketCard({ marketId }: MarketCardProps) {
             <Progress color="primary" value={yesPercentage} className="my-2" aria-label="Yes percentage" />
           </div>
           <div className="flex gap-2 mb-4">
-            <Button color="success" className="flex-1" onPress={() => handleMint(Outcome.YES)}>
-              Buy Yes ↑
+            <Button color="success" className="flex-1" onPress={() => openMintDialog(Outcome.YES)}>
+              Yes
             </Button>
-            <Button color="danger" className="flex-1" onPress={() => handleMint(Outcome.NO)}>
-              Buy No ↓
+            <Button color="danger" className="flex-1" onPress={() => openMintDialog(Outcome.NO)}>
+              No
             </Button>
           </div>
           {/* <div className="flex gap-2 mb-4">
@@ -58,7 +63,14 @@ export default function MarketCard({ marketId }: MarketCardProps) {
           </div>
         </CardBody>
       </Card>
-      <MintModal marketId={marketId} outcome={outcome} amount={1} isOpen={isOpen} onOpenChange={onOpenChange} />
+      <MintModal
+        marketId={marketId}
+        outcome={outcome}
+        amount={1}
+        isOpen={isOpen}
+        onOpenChange={onOpenChange}
+        onMint={onMint}
+      />
     </>
   );
 }

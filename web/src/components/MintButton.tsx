@@ -1,7 +1,8 @@
 "use client";
 
+import { useEffect } from "react";
 import { zeroAddress } from "viem";
-import { useAccount, useWriteContract, useWaitForTransactionReceipt, useSimulateContract } from "wagmi";
+import { useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 
 import { Button, ButtonProps } from "@nextui-org/react";
 import { Outcome } from "@/hooks/useMarket";
@@ -14,22 +15,20 @@ type MintButtonProps = Omit<ButtonProps, "children"> & {
   marketId: `0x${string}`;
   outcome: Outcome;
   amount?: number;
+  onMint?: () => void;
 };
 
-export default function MintButton({ marketId, outcome, amount = 1, ...props }: MintButtonProps) {
+export default function MintButton({ marketId, outcome, amount = 1, onMint = () => {}, ...props }: MintButtonProps) {
   const { address, isConnected } = useAccount();
-
-  const simulate = useSimulateContract({
-    address: FLIPSIDE_ADDRESS,
-    abi: FLIPSIDE_ABI,
-    functionName: "mintOutcome",
-    args: [marketId, address ?? zeroAddress, BigInt(amount * 1e18), BigInt(0), outcome === Outcome.YES],
-  });
-
-  console.log("simulate mint", simulate);
 
   const mintOutcome = useWriteContract();
   const mintOutcomeReceipt = useWaitForTransactionReceipt({ hash: mintOutcome.data });
+
+  useEffect(() => {
+    if (mintOutcomeReceipt.isSuccess) {
+      onMint();
+    }
+  }, [onMint, mintOutcomeReceipt]);
 
   const isDisabled = !isConnected;
   const isLoading = mintOutcome.isPending || mintOutcomeReceipt.isLoading;
