@@ -1,17 +1,28 @@
 "use client";
 
 import React, { useMemo } from "react";
-import { zeroAddress } from "viem";
+import { formatUnits, zeroAddress } from "viem";
 import { useAccount, useReadContract } from "wagmi";
 
 import { erc20Abi } from "viem";
 
-import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, ModalProps, Divider } from "@nextui-org/react";
+import {
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  ModalProps,
+  Divider,
+  Skeleton,
+} from "@nextui-org/react";
 
 import useMarket, { Outcome } from "@/hooks/useMarket";
+import useQuote from "@/hooks/useQuote";
 
 import ActionGuard from "./ActionGuard";
 import MintButton from "./MintButton";
+import useToken from "@/hooks/useToken";
 
 type MintModalProps = Omit<ModalProps, "children"> & {
   marketId: `0x${string}`;
@@ -26,6 +37,10 @@ export default function MintModal({ marketId, outcome, amount = 1, onMint = () =
   const { address, isConnected } = useAccount();
 
   const { data: market } = useMarket(marketId);
+  const { data: collateralToken } = useToken(market?.collateralToken);
+
+  const amountIn = BigInt(amount * 1e18);
+  const { data: amountOut = BigInt(0), isLoading: quoteIsLoading } = useQuote(marketId, outcome, amountIn);
 
   const { data: balance } = useReadContract({
     address: market?.collateralToken,
@@ -54,15 +69,22 @@ export default function MintModal({ marketId, outcome, amount = 1, onMint = () =
                 </div>
                 <Divider />
                 <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm">You pay</span>
-                    <span className="font-medium">${amount}</span>
-                  </div>
+                  <Skeleton isLoaded={!quoteIsLoading}>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm">You pay</span>
+                      <span className="font-medium">
+                        {Number(formatUnits(price, collateralToken?.decimals ?? 18))} {collateralToken?.symbol}
+                      </span>
+                    </div>
 
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm">You receive (estimated)</span>
-                    <span className="font-medium">100 YES tokens</span>
-                  </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">You receive (estimated)</span>
+                      <span className="font-medium">
+                        {Number(formatUnits(amountIn + amountOut, 18)).toFixed(2)}{" "}
+                        {outcome == Outcome.YES ? "Yes" : "No"} tokens
+                      </span>
+                    </div>
+                  </Skeleton>
                 </div>
               </div>
             </ModalBody>

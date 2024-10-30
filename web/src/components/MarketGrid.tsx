@@ -42,16 +42,6 @@ export default function MarketGrid() {
           {markets.map((marketId: `0x${string}`) => (
             <MarketCard key={marketId} marketId={marketId} />
           ))}
-          {[...Array(6)].map((_, index) => (
-            <Card key={index}>
-              <CardBody>
-                <Skeleton className="rounded h-4 w-3/4 mb-2" />
-                <Skeleton className="rounded h-4 w-full mb-2" />
-                <Skeleton className="rounded h-4 w-full mb-2" />
-                <Skeleton className="rounded h-4 w-full mb-2" />
-              </CardBody>
-            </Card>
-          ))}
         </div>
       ) : (
         <Card>

@@ -1,7 +1,7 @@
 import { useCallback, type ReactNode } from "react";
 
 import { erc20Abi, zeroAddress } from "viem";
-import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
+import { useAccount, useReadContract } from "wagmi";
 
 import { Button, type ButtonProps } from "@nextui-org/react";
 
