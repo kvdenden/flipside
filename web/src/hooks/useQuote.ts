@@ -27,6 +27,7 @@ export default function useQuote(
     abi: IQuoterV2ABI,
     functionName: "quoteExactInputSingle",
     args: [{ tokenIn, tokenOut, fee: FeeAmount.HIGH, amountIn: amount, sqrtPriceLimitX96: BigInt(0) }],
+    account: process.env.NEXT_PUBLIC_FLIPSIDE_CONTRACT_ADDRESS,
     query: {
       enabled: !!market,
     },
