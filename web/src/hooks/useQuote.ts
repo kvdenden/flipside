@@ -23,7 +23,7 @@ export default function useQuote(
   const tokenOut = market ? (outcome === Outcome.YES ? market.longToken : market.shortToken) : zeroAddress;
 
   const quote = useSimulateContract({
-    address: "0xC5290058841028F1614F3A6F0F5816cAd0df5E27",
+    address: process.env.NEXT_PUBLIC_UNISWAP_QUOTERV2,
     abi: IQuoterV2ABI,
     functionName: "quoteExactInputSingle",
     args: [{ tokenIn, tokenOut, fee: FeeAmount.HIGH, amountIn: amount, sqrtPriceLimitX96: BigInt(0) }],
