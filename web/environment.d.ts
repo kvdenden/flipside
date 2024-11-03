@@ -14,5 +14,7 @@ namespace NodeJS {
 
     NEXT_PUBLIC_MARKET_FACTORY_CONTRACT_ADDRESS: `0x${string}`;
     NEXT_PUBLIC_FLIPSIDE_CONTRACT_ADDRESS: `0x${string}`;
+
+    OPENAI_API_KEY: string;
   }
 }
