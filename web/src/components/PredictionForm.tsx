@@ -2,19 +2,17 @@
 
 import { useState } from "react";
 
+import NiceModal from "@ebay/nice-modal-react";
 import { Button, Card, CardBody, CardHeader, Input } from "@nextui-org/react";
 import { Sparkles } from "lucide-react";
+import CreateMarketModal from "./CreateMarketModal";
 
-type PredictionForm = {
-  onSubmit?: (prediction: string) => void;
-};
-
-export default function PredictionForm({ onSubmit = () => {} }: PredictionForm) {
+export default function PredictionForm() {
   const [prediction, setPrediction] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(prediction);
+    NiceModal.show(CreateMarketModal, { statement: prediction });
   };
 
   return (
@@ -36,9 +34,6 @@ export default function PredictionForm({ onSubmit = () => {} }: PredictionForm) 
             size="lg"
             classNames={{ inputWrapper: "md:px-6 py-8 md:py-10" }}
             endContent={
-              // <Button type="submit" isIconOnly color="primary" className="invisible md:visible">
-              //   <SendHorizonal />
-              // </Button>
               <Button type="submit" size="lg" color="primary" className="hidden md:flex">
                 <Sparkles size={16} className="flex-shrink-0" /> Get started
               </Button>

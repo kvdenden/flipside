@@ -6,6 +6,7 @@ import { useAccount, useReadContract } from "wagmi";
 
 import { erc20Abi } from "viem";
 
+import NiceModal, { useModal } from "@ebay/nice-modal-react";
 import {
   Modal,
   ModalContent,
@@ -24,7 +25,7 @@ import ActionGuard from "./ActionGuard";
 import MintButton from "./MintButton";
 import useToken from "@/hooks/useToken";
 
-type MintModalProps = Omit<ModalProps, "children"> & {
+type MintModalProps = {
   marketId: `0x${string}`;
   outcome: Outcome;
   amount?: number;
@@ -33,7 +34,13 @@ type MintModalProps = Omit<ModalProps, "children"> & {
 
 const FLIPSIDE_ADDRESS = process.env.NEXT_PUBLIC_FLIPSIDE_CONTRACT_ADDRESS;
 
-export default function MintModal({ marketId, outcome, amount = 1, onMint = () => {}, ...props }: MintModalProps) {
+function MintModal({
+  marketId,
+  outcome,
+  amount = 1,
+  onMint = () => {},
+  ...props
+}: Omit<ModalProps, "children"> & MintModalProps) {
   const { address, isConnected } = useAccount();
 
   const { data: market } = useMarket(marketId);
@@ -117,3 +124,9 @@ export default function MintModal({ marketId, outcome, amount = 1, onMint = () =
     </Modal>
   );
 }
+
+export default NiceModal.create((props: MintModalProps) => {
+  const modal = useModal();
+
+  return <MintModal isOpen={modal.visible} onClose={modal.hide} {...props} />;
+});

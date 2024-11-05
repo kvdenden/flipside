@@ -1,7 +1,8 @@
 "use client";
 
-import { useCallback, useState } from "react";
-import { Button, Card, CardBody, Progress, useDisclosure } from "@nextui-org/react";
+import { useCallback } from "react";
+import NiceModal from "@ebay/nice-modal-react";
+import { Button, Card, CardBody, Progress } from "@nextui-org/react";
 
 import useMarket, { Outcome } from "@/hooks/useMarket";
 import usePool from "@/hooks/usePool";
@@ -16,13 +17,8 @@ export default function MarketCard({ marketId }: MarketCardProps) {
   const { data: market } = useMarket(marketId);
   const { data: pool, refetch: refetchPool } = usePool(marketId);
 
-  const { isOpen, onOpen, onOpenChange } = useDisclosure();
-
-  const [outcome, setOutcome] = useState<Outcome>(Outcome.YES);
-
   const openMintDialog = (outcome: Outcome) => {
-    setOutcome(outcome);
-    onOpen();
+    NiceModal.show(MintModal, { marketId, outcome, amount: 1, onMint });
   };
 
   const onMint = useCallback(() => {
@@ -55,22 +51,11 @@ export default function MarketCard({ marketId }: MarketCardProps) {
               No
             </Button>
           </div>
-          {/* <div className="flex gap-2 mb-4">
-          <ApprovalButton token={market.collateralToken} amount={market.unitPrice} />
-        </div> */}
           <div className="flex justify-between text-sm text-gray-400">
             <span>$17.2m Vol.</span>
           </div>
         </CardBody>
       </Card>
-      <MintModal
-        marketId={marketId}
-        outcome={outcome}
-        amount={1}
-        isOpen={isOpen}
-        onOpenChange={onOpenChange}
-        onMint={onMint}
-      />
     </>
   );
 }
