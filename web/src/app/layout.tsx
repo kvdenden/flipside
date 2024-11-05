@@ -21,7 +21,7 @@ export default function RootLayout({
         <Providers>
           <Header />
           <div className="container mx-auto">
-            <main>{children}</main>
+            <main className="dark text-foreground bg-background">{children}</main>
           </div>
         </Providers>
       </body>

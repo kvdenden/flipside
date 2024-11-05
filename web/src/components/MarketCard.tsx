@@ -36,7 +36,7 @@ export default function MarketCard({ marketId }: MarketCardProps) {
 
   return (
     <>
-      <Card className="w-full bg-gray-800 text-white">
+      <Card>
         <CardBody className="p-4">
           <div className="flex flex-col mb-2">
             <h3 className="text-lg font-semibold mb-2">{market.title}</h3>

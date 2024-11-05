@@ -16,6 +16,7 @@
     "@uniswap/sdk-core": "^5.8.1",
     "@uniswap/v3-sdk": "^3.17.1",
     "framer-motion": "^11.8.0",
+    "lucide-react": "^0.454.0",
     "next": "14.2.13",
     "openai": "^4.70.2",
     "react": "^18",
