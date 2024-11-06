@@ -1,5 +1,6 @@
 "use client";
 
+import useMarketSuggestion from "@/hooks/useMarketSuggestion";
 import NiceModal, { useModal } from "@ebay/nice-modal-react";
 import {
   Modal,
@@ -19,6 +20,10 @@ type CreateMarketModalProps = {
 };
 
 function CreateMarketModal({ statement, ...props }: Omit<ModalProps, "children"> & CreateMarketModalProps) {
+  const { data: suggestion, isSuccess } = useMarketSuggestion(statement);
+
+  console.log("suggestion", suggestion);
+
   return (
     <Modal {...props}>
       <ModalContent>
@@ -32,14 +37,9 @@ function CreateMarketModal({ statement, ...props }: Omit<ModalProps, "children">
                 </div>
                 <Divider />
                 <div>
-                  <Skeleton isLoaded={false}>
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm">You pay</span>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm">You receive (estimated)</span>
-                    </div>
+                  <Skeleton isLoaded={isSuccess}>
+                    <h3 className="text-lg font-semibold mb-2">{suggestion?.title}</h3>
+                    <p>{suggestion?.description}</p>
                   </Skeleton>
                 </div>
               </div>
