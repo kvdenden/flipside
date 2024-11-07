@@ -12,7 +12,7 @@ export default function PredictionForm() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    NiceModal.show(CreateMarketModal, { statement: prediction });
+    NiceModal.show(CreateMarketModal, { defaultStatement: prediction });
   };
 
   return (

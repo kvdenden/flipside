@@ -1,7 +1,8 @@
 "use client";
 
-import useMarketSuggestion from "@/hooks/useMarketSuggestion";
-import NiceModal, { useModal } from "@ebay/nice-modal-react";
+import React, { useCallback, useEffect, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+
 import {
   Modal,
   ModalContent,
@@ -12,42 +13,276 @@ import {
   Divider,
   Skeleton,
   Button,
+  Input,
+  Textarea,
+  Card,
+  CardBody,
+  DatePicker,
+  Autocomplete,
+  AutocompleteItem,
 } from "@nextui-org/react";
+import { Wand2 } from "lucide-react";
+
+import NiceModal, { useModal } from "@ebay/nice-modal-react";
+import { getLocalTimeZone, now } from "@internationalized/date";
+
+import { parseUnits, zeroAddress } from "viem";
+import { useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
+
+import ActionGuard from "./ActionGuard";
+import useToken from "@/hooks/useToken";
+
+import { flipsideAbi } from "@/web3/abi";
+import useConnect from "@/hooks/useConnect";
+import useMarket from "@/hooks/useMarket";
+import useMarkets from "@/hooks/useMarkets";
+
+const USDC = { name: "USDC", address: process.env.NEXT_PUBLIC_USDC };
+const WETH = { name: "WETH", address: process.env.NEXT_PUBLIC_WETH };
+
+const FLIPSIDE_ADDRESS = process.env.NEXT_PUBLIC_FLIPSIDE_CONTRACT_ADDRESS;
+const FLIPSIDE_ABI = flipsideAbi;
+
+const popularTokens = [USDC, WETH];
 
 type CreateMarketModalProps = {
-  statement: string;
-  // onCreate?: () => void;
+  defaultStatement?: string;
+  onCreate?: () => void;
 };
 
-function CreateMarketModal({ statement, ...props }: Omit<ModalProps, "children"> & CreateMarketModalProps) {
-  const { data: suggestion, isSuccess } = useMarketSuggestion(statement);
+const fetchSuggestion = async (prediction: string) => {
+  const response = await fetch(`/api/markets/suggest`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ prediction }),
+  });
+  if (response.ok) {
+    const { result } = await response.json();
 
-  console.log("suggestion", suggestion);
+    return result;
+  }
+
+  return;
+};
+
+function CreateMarketModal({
+  defaultStatement = "",
+  onCreate = () => {},
+  ...props
+}: Omit<ModalProps, "children"> & CreateMarketModalProps) {
+  const [statement, setStatement] = useState(defaultStatement);
+
+  const [marketData, setMarketData] = useState({
+    title: "",
+    description: "",
+    collateralToken: USDC.address,
+    unitPrice: "1",
+  });
+
+  const { address } = useAccount();
+
+  const { data: collateralToken } = useToken(marketData.collateralToken as `0x${string}`);
+
+  const unitPrice = collateralToken ? parseUnits(marketData.unitPrice, collateralToken.decimals) : BigInt(0);
+  const initialLiquidity = BigInt(10 * 1e18);
+  const price = (unitPrice * initialLiquidity) / BigInt(1e18);
+
+  const createMarket = useWriteContract();
+
+  const {
+    data: suggestion,
+    isFetching: isSuggestionLoading,
+    refetch: suggest,
+  } = useQuery({
+    queryKey: ["suggestion", statement],
+    queryFn: () => fetchSuggestion(statement),
+    enabled: false,
+    refetchOnWindowFocus: false,
+    staleTime: 0,
+  });
+
+  useEffect(() => {
+    if (statement === defaultStatement) return;
+
+    setStatement(defaultStatement);
+    setMarketData((prevState) => ({
+      ...prevState,
+      title: "",
+      description: "",
+    }));
+  }, [defaultStatement]);
+
+  useEffect(() => {
+    if (suggestion) {
+      setMarketData((prevState) => ({
+        ...prevState,
+        title: suggestion.title,
+        description: suggestion.description,
+      }));
+    }
+  }, [suggestion]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setMarketData((prevState) => ({
+      ...prevState,
+      [name]: value,
+    }));
+  };
+
+  const handleCreateMarket = () => {
+    console.log("create market", address, marketData, unitPrice, initialLiquidity);
+
+    console.log("address", address);
+    console.log("collateralToken", collateralToken);
+
+    if (!address) return;
+    if (!collateralToken) return;
+
+    createMarket.writeContract({
+      address: FLIPSIDE_ADDRESS,
+      abi: FLIPSIDE_ABI,
+      functionName: "createMarket",
+      args: [
+        {
+          creator: address,
+          pairName: "Flipside",
+          pairSymbol: "FLIP",
+          title: marketData.title,
+          description: marketData.description,
+          collateralToken: collateralToken.address,
+          unitPrice,
+          initialLiquidity,
+        },
+      ],
+    });
+  };
+
+  const createMarketReceipt = useWaitForTransactionReceipt({ hash: createMarket.data });
+
+  useEffect(() => {
+    if (createMarketReceipt.isSuccess) {
+      onCreate();
+    }
+  }, [onCreate, createMarketReceipt]);
+
+  console.log("error", createMarket.error);
+
+  // useEffect(() => {
+  //   if (createMarketReceipt.isSuccess) {
+  //     setStatement("");
+  //     setMarketData({
+  //       title: "",
+  //       description: "",
+  //       collateralToken: USDC.address,
+  //       unitPrice: "1",
+  //     });
+  //   }
+  //   onCreate();
+  // }, [createMarketReceipt]);
 
   return (
-    <Modal {...props}>
+    <Modal scrollBehavior="inside" {...props}>
       <ModalContent>
         {(onClose) => (
           <>
-            <ModalHeader className="flex flex-col gap-1">Create Prediction Market</ModalHeader>
+            <ModalHeader className="flex flex-col gap-1">Create a Prediction Market</ModalHeader>
             <ModalBody>
-              <div className="grid gap-6">
-                <div>
-                  <h3 className="text-lg font-semibold mb-2">{statement}</h3>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Input
+                    label="Prediction statement"
+                    name="statement"
+                    value={statement}
+                    onValueChange={setStatement}
+                    isReadOnly={isSuggestionLoading}
+                  />
+                  <Button
+                    color="secondary"
+                    className="w-full"
+                    isLoading={isSuggestionLoading}
+                    onClick={() => suggest()}
+                  >
+                    <Wand2 size={16} className="flex-shrink-0" />
+                    Generate Market Details with AI
+                  </Button>
                 </div>
                 <Divider />
-                <div>
-                  <Skeleton isLoaded={isSuccess}>
-                    <h3 className="text-lg font-semibold mb-2">{suggestion?.title}</h3>
-                    <p>{suggestion?.description}</p>
+                <div className="space-y-2">
+                  <h2 className="text-lg font-semibold">Market Details</h2>
+                  <Skeleton isLoaded={!isSuggestionLoading} className="rounded-xl">
+                    <Input
+                      label="Title"
+                      name="title"
+                      value={marketData.title}
+                      onChange={handleChange}
+                      isReadOnly={isSuggestionLoading}
+                    />
                   </Skeleton>
+                  <Skeleton isLoaded={!isSuggestionLoading} className="rounded-xl">
+                    <Textarea
+                      label="Description"
+                      name="description"
+                      value={marketData.description}
+                      onChange={handleChange}
+                      isReadOnly={isSuggestionLoading}
+                    />
+                  </Skeleton>
+                  {/* <DatePicker
+                    label="Expiration Date"
+                    granularity="minute"
+                    hideTimeZone
+                    showMonthAndYearPickers
+                    minValue={now(getLocalTimeZone()).add({ hours: 24 })}
+                  /> */}
+                </div>
+                <div className="space-y-2">
+                  <h3 className="font-semibold">Unit Price</h3>
+                  <div className="flex space-x-2">
+                    <Input
+                      type="number"
+                      label="Amount"
+                      name="unitPrice"
+                      value={marketData.unitPrice}
+                      onChange={handleChange}
+                      className="w-1/3"
+                    />
+                    <Autocomplete
+                      label="Collateral Token"
+                      defaultItems={popularTokens}
+                      selectedKey={marketData.collateralToken}
+                      onChange={handleChange}
+                      className="w-2/3"
+                    >
+                      {(token) => (
+                        <AutocompleteItem key={token.address} textValue={token.name}>
+                          {token.name}
+                        </AutocompleteItem>
+                      )}
+                    </Autocomplete>
+                  </div>
                 </div>
               </div>
             </ModalBody>
             <ModalFooter>
-              <Button color="primary" onClick={onClose}>
-                Close
-              </Button>
+              <ActionGuard
+                token={collateralToken ? collateralToken.address : zeroAddress}
+                amount={price}
+                spender={FLIPSIDE_ADDRESS}
+                buttonProps={{ className: "w-full" }}
+              >
+                <Button
+                  type="submit"
+                  color="primary"
+                  className="w-full"
+                  onPress={handleCreateMarket}
+                  isLoading={createMarket.isPending || createMarketReceipt.isLoading}
+                >
+                  Create Market
+                </Button>
+              </ActionGuard>
             </ModalFooter>
           </>
         )}
@@ -58,6 +293,12 @@ function CreateMarketModal({ statement, ...props }: Omit<ModalProps, "children">
 
 export default NiceModal.create((props: CreateMarketModalProps) => {
   const modal = useModal();
+  const { refetch: refetchMarkets } = useMarkets();
 
-  return <CreateMarketModal isOpen={modal.visible} onClose={modal.hide} {...props} />;
+  const onCreate = useCallback(() => {
+    if (modal.visible) modal.hide();
+    refetchMarkets();
+  }, [modal, refetchMarkets]);
+
+  return <CreateMarketModal isOpen={modal.visible} onClose={modal.hide} onCreate={onCreate} {...props} />;
 });
