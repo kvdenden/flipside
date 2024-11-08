@@ -1,41 +1,34 @@
 "use client";
 
 import React, { useCallback, useEffect, useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 
 import {
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  ModalProps,
-  Divider,
-  Skeleton,
-  Button,
-  Input,
-  Textarea,
-  Card,
-  CardBody,
-  DatePicker,
   Autocomplete,
   AutocompleteItem,
+  Button,
+  Divider,
+  Input,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  ModalProps,
+  Skeleton,
+  Textarea,
 } from "@nextui-org/react";
 import { Wand2 } from "lucide-react";
 
 import NiceModal, { useModal } from "@ebay/nice-modal-react";
-import { getLocalTimeZone, now } from "@internationalized/date";
 
 import { parseUnits, zeroAddress } from "viem";
-import { useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
-
-import ActionGuard from "./ActionGuard";
-import useToken from "@/hooks/useToken";
+import { useAccount, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
 
 import { flipsideAbi } from "@/web3/abi";
-import useConnect from "@/hooks/useConnect";
-import useMarket from "@/hooks/useMarket";
+import useToken from "@/hooks/useToken";
 import useMarkets from "@/hooks/useMarkets";
+import ActionGuard from "./ActionGuard";
 
 const USDC = { name: "USDC", address: process.env.NEXT_PUBLIC_USDC };
 const WETH = { name: "WETH", address: process.env.NEXT_PUBLIC_WETH };
@@ -104,8 +97,6 @@ function CreateMarketModal({
   });
 
   useEffect(() => {
-    if (statement === defaultStatement) return;
-
     setStatement(defaultStatement);
     setMarketData((prevState) => ({
       ...prevState,
@@ -133,11 +124,6 @@ function CreateMarketModal({
   };
 
   const handleCreateMarket = () => {
-    console.log("create market", address, marketData, unitPrice, initialLiquidity);
-
-    console.log("address", address);
-    console.log("collateralToken", collateralToken);
-
     if (!address) return;
     if (!collateralToken) return;
 
@@ -168,25 +154,10 @@ function CreateMarketModal({
     }
   }, [onCreate, createMarketReceipt]);
 
-  console.log("error", createMarket.error);
-
-  // useEffect(() => {
-  //   if (createMarketReceipt.isSuccess) {
-  //     setStatement("");
-  //     setMarketData({
-  //       title: "",
-  //       description: "",
-  //       collateralToken: USDC.address,
-  //       unitPrice: "1",
-  //     });
-  //   }
-  //   onCreate();
-  // }, [createMarketReceipt]);
-
   return (
     <Modal scrollBehavior="inside" {...props}>
       <ModalContent>
-        {(onClose) => (
+        {() => (
           <>
             <ModalHeader className="flex flex-col gap-1">Create a Prediction Market</ModalHeader>
             <ModalBody>
