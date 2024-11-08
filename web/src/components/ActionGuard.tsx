@@ -30,8 +30,19 @@ export default function ActionGuard({
   const { address = zeroAddress, isConnected } = useAccount();
 
   const queryClient = useQueryClient();
+
+  const { isLoading: isBalanceLoading, data: balance = BigInt(0) } = useReadContract({
+    address: token,
+    abi: erc20Abi,
+    functionName: "balanceOf",
+    args: [address],
+    query: {
+      enabled: isConnected,
+    },
+  });
+
   const {
-    isLoading,
+    isLoading: isAllowanceLoading,
     data: allowance = BigInt(0),
     refetch: refetchAllowance,
     queryKey,
@@ -54,8 +65,9 @@ export default function ActionGuard({
   );
 
   const sufficientAllowance = allowance >= amount;
+  const sufficientBalance = balance >= amount;
 
-  if (isLoading) return <Button variant="ghost" isLoading {...buttonProps} />;
+  if (isBalanceLoading || isAllowanceLoading) return <Button variant="ghost" isLoading {...buttonProps} />;
 
   if (!isConnected) return <ConnectButton />;
 
@@ -69,6 +81,13 @@ export default function ActionGuard({
         {...buttonProps}
         {...approvalProps}
       />
+    );
+
+  if (!sufficientBalance)
+    return (
+      <Button isDisabled {...buttonProps}>
+        Insufficient Balance
+      </Button>
     );
 
   return <>{children}</>;
