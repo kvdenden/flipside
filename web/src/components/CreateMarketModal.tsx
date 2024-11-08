@@ -224,7 +224,13 @@ function CreateMarketModal({
                       label="Collateral Token"
                       defaultItems={popularTokens}
                       selectedKey={marketData.collateralToken}
-                      onChange={handleChange}
+                      onSelectionChange={(value) => {
+                        setMarketData((prevState) => ({
+                          ...prevState,
+                          collateralToken: value as `0x${string}`,
+                        }));
+                      }}
+                      isClearable={false}
                       className="w-2/3"
                     >
                       {(token) => (
