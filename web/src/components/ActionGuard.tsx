@@ -15,18 +15,10 @@ type ActionGuardProps = {
   spender: `0x${string}`;
   approveMax?: boolean;
   buttonProps?: ButtonProps;
-  approvalProps?: ButtonProps;
   children: ReactNode;
 };
 
-export default function ActionGuard({
-  token,
-  amount,
-  spender,
-  buttonProps,
-  approvalProps,
-  children,
-}: ActionGuardProps) {
+export default function ActionGuard({ token, amount, spender, buttonProps, children }: ActionGuardProps) {
   const { address = zeroAddress, isConnected } = useAccount();
 
   const queryClient = useQueryClient();
@@ -69,7 +61,7 @@ export default function ActionGuard({
 
   if (isBalanceLoading || isAllowanceLoading) return <Button variant="ghost" isLoading {...buttonProps} />;
 
-  if (!isConnected) return <ConnectButton />;
+  if (!isConnected) return <ConnectButton {...buttonProps} />;
 
   if (!sufficientAllowance)
     return (
@@ -79,7 +71,6 @@ export default function ActionGuard({
         amount={amount}
         onApprove={() => onApprove(amount)}
         {...buttonProps}
-        {...approvalProps}
       />
     );
 
