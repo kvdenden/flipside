@@ -9,6 +9,7 @@ export default createSchema((p) => ({
     unitPrice: p.bigint(),
     title: p.string(),
     description: p.string(),
+    expirationDate: p.int(),
     longToken: p.hex(),
     shortToken: p.hex(),
     resolved: p.boolean(),

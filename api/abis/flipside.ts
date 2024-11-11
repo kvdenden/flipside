@@ -16,6 +16,7 @@ export const marketAbi = [
           { name: 'pairSymbol', internalType: 'string', type: 'string' },
           { name: 'title', internalType: 'string', type: 'string' },
           { name: 'description', internalType: 'string', type: 'string' },
+          { name: 'expirationDate', internalType: 'uint256', type: 'uint256' },
           { name: 'collateralToken', internalType: 'address', type: 'address' },
           { name: 'unitPrice', internalType: 'uint256', type: 'uint256' },
           { name: 'resolver', internalType: 'address', type: 'address' },
@@ -44,6 +45,13 @@ export const marketAbi = [
     inputs: [],
     name: 'description',
     outputs: [{ name: '', internalType: 'string', type: 'string' }],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
+    inputs: [],
+    name: 'expirationDate',
+    outputs: [{ name: '', internalType: 'uint256', type: 'uint256' }],
     stateMutability: 'view',
   },
   {
@@ -242,6 +250,7 @@ export const marketFactoryAbi = [
           { name: 'pairSymbol', internalType: 'string', type: 'string' },
           { name: 'title', internalType: 'string', type: 'string' },
           { name: 'description', internalType: 'string', type: 'string' },
+          { name: 'expirationDate', internalType: 'uint256', type: 'uint256' },
           { name: 'collateralToken', internalType: 'address', type: 'address' },
           { name: 'unitPrice', internalType: 'uint256', type: 'uint256' },
           {

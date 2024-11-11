@@ -23,6 +23,14 @@ ponder.on("MarketFactory:MarketCreated", async ({ event, context }) => {
     functionName: "description",
   });
 
+  const expirationDate = await client
+    .readContract({
+      abi: marketAbi,
+      address: market,
+      functionName: "expirationDate",
+    })
+    .then(Number);
+
   const longToken = await client.readContract({
     abi: marketAbi,
     address: market,
@@ -43,6 +51,7 @@ ponder.on("MarketFactory:MarketCreated", async ({ event, context }) => {
       unitPrice,
       title,
       description,
+      expirationDate,
       longToken,
       shortToken,
       resolved: false,
