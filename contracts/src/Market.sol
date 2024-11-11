@@ -2,6 +2,7 @@
 pragma solidity ^0.8.23;
 
 import { Math } from "@openzeppelin/contracts/utils/math/Math.sol";
+import { Strings } from "@openzeppelin/contracts/utils/Strings.sol";
 import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
@@ -15,6 +16,8 @@ import { OutcomeToken } from "./OutcomeToken.sol";
 
 contract Market {
   using Math for uint256;
+  using Strings for uint256;
+
   using SafeERC20 for IERC20;
 
   struct MarketParams {
@@ -23,6 +26,7 @@ contract Market {
     string pairSymbol;
     string title;
     string description;
+    uint256 expirationDate;
     address collateralToken;
     uint256 unitPrice;
     address resolver;
@@ -33,6 +37,7 @@ contract Market {
 
   string public title;
   string public description;
+  uint256 public expirationDate;
 
   IERC20 public collateralToken;
 
@@ -68,11 +73,12 @@ contract Market {
     creator = params.creator;
     title = params.title;
     description = params.description;
+    expirationDate = params.expirationDate;
     collateralToken = IERC20(params.collateralToken);
     unitPrice = params.unitPrice;
 
     _resolver = IResolver(params.resolver);
-    _resolutionId = _resolver.initializeQuery(description);
+    _resolutionId = _resolver.initializeQuery(_queryDescription());
 
     _rewardManager = IRewardManager(params.rewardManager);
   }
@@ -146,5 +152,11 @@ contract Market {
     if (outcome_ == Outcome.No) return shortAmount;
 
     return (longAmount + shortAmount) / 2;
+  }
+
+  function _queryDescription() private view returns (string memory) {
+    return string.concat(
+      "Title: ", title, "\n", "Description: ", description, "\n", "Expiration date: ", expirationDate.toString(), "\n"
+    );
   }
 }

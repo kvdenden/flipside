@@ -34,6 +34,7 @@ contract PoolManagerTest is Test {
       "FLIP",
       "What does the fox say?",
       "",
+      block.timestamp + 1 days,
       address(collateralToken),
       1e6,
       address(resolver),

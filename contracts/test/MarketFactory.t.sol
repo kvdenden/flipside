@@ -40,7 +40,15 @@ contract MarketFactoryTest is Test {
     collateralToken.approve(address(marketFactory), initialLiquidity);
 
     MarketFactory.Params memory params = MarketFactory.Params(
-      address(this), "Flipside", "FLIP", "What does the fox say?", "", address(collateralToken), 1e18, initialLiquidity
+      address(this),
+      "Flipside",
+      "FLIP",
+      "What does the fox say?",
+      "",
+      block.timestamp + 1 days,
+      address(collateralToken),
+      1e18,
+      initialLiquidity
     );
     marketFactory.createMarket(params);
   }

@@ -18,11 +18,12 @@ contract Deploy is Script {
 
     string memory title = vm.prompt("Enter market title");
     string memory description = vm.prompt("Enter market description");
+    uint256 expirationDate = vm.promptUint("Enter expiration date");
 
     vm.startBroadcast(privateKey);
 
     Market.MarketParams memory params = Market.MarketParams(
-      vm.addr(privateKey), "Flipside", "FLIP", title, description, usdc, 1e6, resolver, rewardManager
+      vm.addr(privateKey), "Flipside", "FLIP", title, description, expirationDate, usdc, 1e6, resolver, rewardManager
     );
 
     market = new Market(params);

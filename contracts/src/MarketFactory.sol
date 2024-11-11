@@ -13,6 +13,7 @@ contract MarketFactory {
     string pairSymbol;
     string title;
     string description;
+    uint256 expirationDate;
     address collateralToken;
     uint256 unitPrice;
     uint256 initialLiquidity;
@@ -45,6 +46,7 @@ contract MarketFactory {
       params.pairSymbol,
       params.title,
       params.description,
+      params.expirationDate,
       params.collateralToken,
       params.unitPrice,
       _resolver,

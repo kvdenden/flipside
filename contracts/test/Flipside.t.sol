@@ -97,6 +97,7 @@ contract FlipsideTest is Test {
       "FLIP",
       "What does the fox say?",
       "",
+      block.timestamp + 1 days,
       address(collateralToken),
       unitPrice,
       initialLiquidity
