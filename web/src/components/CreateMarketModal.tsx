@@ -7,6 +7,7 @@ import {
   Autocomplete,
   AutocompleteItem,
   Button,
+  DatePicker,
   Divider,
   Input,
   Modal,
@@ -21,6 +22,7 @@ import {
 import { Wand2 } from "lucide-react";
 
 import NiceModal, { useModal } from "@ebay/nice-modal-react";
+import { fromDate, getLocalTimeZone, now } from "@internationalized/date";
 
 import { parseUnits, zeroAddress } from "viem";
 import { useAccount, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
@@ -54,7 +56,10 @@ const fetchSuggestion = async (prediction: string) => {
   if (response.ok) {
     const { result } = await response.json();
 
-    return result;
+    const { title, description } = result;
+    const expirationDate = new Date(result.expiration_date);
+
+    return { title, description, expirationDate };
   }
 
   return;
@@ -70,6 +75,7 @@ function CreateMarketModal({
   const [marketData, setMarketData] = useState({
     title: "",
     description: "",
+    expirationDate: now(getLocalTimeZone()).add({ years: 1 }),
     collateralToken: USDC.address,
     unitPrice: "1",
   });
@@ -102,6 +108,7 @@ function CreateMarketModal({
       ...prevState,
       title: "",
       description: "",
+      expirationDate: now(getLocalTimeZone()).add({ years: 1 }),
     }));
   }, [defaultStatement]);
 
@@ -111,6 +118,7 @@ function CreateMarketModal({
         ...prevState,
         title: suggestion.title,
         description: suggestion.description,
+        expirationDate: fromDate(suggestion.expirationDate, getLocalTimeZone()),
       }));
     }
   }, [suggestion]);
@@ -138,6 +146,7 @@ function CreateMarketModal({
           pairSymbol: "FLIP",
           title: marketData.title,
           description: marketData.description,
+          expirationDate: BigInt(marketData.expirationDate.toDate().getTime() / 1000),
           collateralToken: collateralToken.address,
           unitPrice,
           initialLiquidity,
@@ -201,13 +210,20 @@ function CreateMarketModal({
                       isReadOnly={isSuggestionLoading}
                     />
                   </Skeleton>
-                  {/* <DatePicker
+                  <DatePicker
                     label="Expiration Date"
                     granularity="minute"
                     hideTimeZone
                     showMonthAndYearPickers
+                    value={marketData.expirationDate}
+                    onChange={(value) => {
+                      setMarketData((prevState) => ({
+                        ...prevState,
+                        expirationDate: value,
+                      }));
+                    }}
                     minValue={now(getLocalTimeZone()).add({ hours: 24 })}
-                  /> */}
+                  />
                 </div>
                 <div className="space-y-2">
                   <h3 className="font-semibold">Unit Price</h3>

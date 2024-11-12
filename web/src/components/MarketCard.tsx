@@ -8,6 +8,7 @@ import useMarket, { Outcome } from "@/hooks/useMarket";
 import usePool from "@/hooks/usePool";
 
 import MintModal from "./MintModal";
+import { Clock } from "lucide-react";
 
 type MarketCardProps = {
   marketId: `0x${string}`;
@@ -51,8 +52,9 @@ export default function MarketCard({ marketId }: MarketCardProps) {
               No
             </Button>
           </div>
-          <div className="flex justify-between text-sm text-gray-400">
-            <span>$17.2m Vol.</span>
+          <div className="flex items-center text-sm text-gray-400">
+            <Clock size={16} className="mr-2" />
+            {market.expirationDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
           </div>
         </CardBody>
       </Card>

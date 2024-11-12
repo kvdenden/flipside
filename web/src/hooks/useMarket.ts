@@ -18,6 +18,7 @@ export type Market = {
   id: `0x${string}`;
   title: string;
   description: string;
+  expirationDate: Date;
   collateralToken: `0x${string}`;
   unitPrice: bigint;
   longToken: `0x${string}`;
@@ -37,6 +38,7 @@ const fetchMarket = async (marketId: `0x${string}`): Promise<Market | undefined>
       id: market.id,
       title: market.title,
       description: market.description,
+      expirationDate: new Date(market.expirationDate * 1000),
       collateralToken: getAddress(market.collateralToken),
       unitPrice: hexToBigInt(market.unitPrice),
       longToken: getAddress(market.longToken),

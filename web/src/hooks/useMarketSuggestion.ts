@@ -11,7 +11,10 @@ const fetchSuggestion = async (prediction: string) => {
   if (response.ok) {
     const { result } = await response.json();
 
-    return result;
+    const { title, description } = result;
+    const expirationDate = Date.parse(result.expirationDate);
+
+    return { title, description, expirationDate };
   }
 
   return;
