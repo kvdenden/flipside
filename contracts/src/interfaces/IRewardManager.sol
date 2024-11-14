@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.23;
 
-import { Market } from "../Market.sol";
+import { IMarket } from "./IMarket.sol";
 
 interface IRewardManager {
-  function collect(Market market, uint256 amount) external;
-  function claim(Market market) external;
+  function collect(IMarket market, uint256 amount) external;
+  function claim(IMarket market) external;
 }

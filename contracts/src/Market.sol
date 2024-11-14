@@ -8,13 +8,14 @@ import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 import { Price } from "./lib/Price.sol";
 
+import { IMarket } from "./interfaces/IMarket.sol";
 import { IResolver } from "./interfaces/IResolver.sol";
 import { IRewardManager } from "./interfaces/IRewardManager.sol";
 
 import { Outcome } from "./Outcome.sol";
 import { OutcomeToken } from "./OutcomeToken.sol";
 
-contract Market {
+contract Market is IMarket {
   using Math for uint256;
   using Strings for uint256;
 
@@ -49,7 +50,6 @@ contract Market {
   uint256 public totalVolume;
 
   IResolver private _resolver;
-  bytes32 private _resolutionId;
 
   IRewardManager private _rewardManager;
 
@@ -78,7 +78,6 @@ contract Market {
     unitPrice = params.unitPrice;
 
     _resolver = IResolver(params.resolver);
-    _resolutionId = _resolver.initializeQuery(_queryDescription());
 
     _rewardManager = IRewardManager(params.rewardManager);
   }
@@ -129,16 +128,12 @@ contract Market {
     return price(amount).ceilDiv(100);
   }
 
-  function resolve(Outcome outcome_) external {
-    _resolver.assertOutcome(_resolutionId, outcome_);
-  }
-
   function resolved() public view returns (bool) {
-    return _resolver.resolved(_resolutionId);
+    return _resolver.resolved(this);
   }
 
   function outcome() public view whenResolved returns (Outcome) {
-    return _resolver.outcome(_resolutionId);
+    return _resolver.outcome(this);
   }
 
   function _payout(address to, uint256 amount) private {
@@ -152,11 +147,5 @@ contract Market {
     if (outcome_ == Outcome.No) return shortAmount;
 
     return (longAmount + shortAmount) / 2;
-  }
-
-  function _queryDescription() private view returns (string memory) {
-    return string.concat(
-      "Title: ", title, "\n", "Description: ", description, "\n", "Expiration date: ", expirationDate.toString(), "\n"
-    );
   }
 }

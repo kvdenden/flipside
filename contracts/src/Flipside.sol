@@ -7,8 +7,10 @@ import { IV3SwapRouter } from "./interfaces/uniswap/IV3SwapRouter.sol";
 
 import { Price } from "./lib/Price.sol";
 
-import { MarketFactory } from "./MarketFactory.sol";
+import { IMarket } from "./interfaces/IMarket.sol";
+
 import { Market } from "./Market.sol";
+import { MarketFactory } from "./MarketFactory.sol";
 
 contract Flipside {
   MarketFactory public marketFactory;
@@ -29,11 +31,11 @@ contract Flipside {
     return marketFactory.createMarket(params);
   }
 
-  function mintPair(Market market, address to, uint256 amount) external {
+  function mintPair(IMarket market, address to, uint256 amount) external {
     _mint(market, to, amount);
   }
 
-  function mintOutcome(Market market, address to, uint256 amount, uint256 amountOutMin, bool outcome) external {
+  function mintOutcome(IMarket market, address to, uint256 amount, uint256 amountOutMin, bool outcome) external {
     _mint(market, address(this), amount);
     address longToken = address(market.longToken());
     address shortToken = address(market.shortToken());
@@ -44,9 +46,9 @@ contract Flipside {
     IERC20(tokenOut).transfer(to, amount + amountOut);
   }
 
-  function _mint(Market market, address to, uint256 amount) internal {
+  function _mint(IMarket market, address to, uint256 amount) internal {
     IERC20 collateralToken = market.collateralToken();
-    uint256 collateralAmount = market.price(amount);
+    uint256 collateralAmount = Price.calculate(amount, market.unitPrice());
     collateralToken.transferFrom(msg.sender, address(this), collateralAmount);
     collateralToken.approve(address(market), collateralAmount);
     market.mint(to, amount);

@@ -6,7 +6,7 @@ import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.s
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 import { IRewardManager } from "./interfaces/IRewardManager.sol";
-import { Market } from "./Market.sol";
+import { IMarket } from "./interfaces/IMarket.sol";
 import { Outcome } from "./Outcome.sol";
 
 contract RewardManager is IRewardManager {
@@ -19,14 +19,14 @@ contract RewardManager is IRewardManager {
   address private immutable _TREASURY;
   uint256 private immutable _CREATOR_REWARD; // in basis points
 
-  mapping(Market => uint256) private _rewards;
+  mapping(IMarket => uint256) private _rewards;
 
   constructor(address treasury, uint256 creatorReward) {
     _TREASURY = treasury;
     _CREATOR_REWARD = creatorReward;
   }
 
-  function collect(Market market, uint256 amount) external override {
+  function collect(IMarket market, uint256 amount) external override {
     require(msg.sender == address(market), "Invalid caller");
 
     IERC20 collateralToken = market.collateralToken();
@@ -42,7 +42,7 @@ contract RewardManager is IRewardManager {
     emit Collect(address(market), amount);
   }
 
-  function claim(Market market) external override {
+  function claim(IMarket market) external override {
     require(market.resolved(), "Market not resolved");
 
     IERC20 collateralToken = market.collateralToken();

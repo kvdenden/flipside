@@ -9,8 +9,10 @@ import { TickMath } from "@uniswap/v3-core/contracts/libraries/TickMath.sol";
 
 import { INonfungiblePositionManager } from "@uniswap/v3-periphery/contracts/interfaces/INonfungiblePositionManager.sol";
 
+import { Price } from "./lib/Price.sol";
+
 import { IPoolManager } from "./interfaces/IPoolManager.sol";
-import { Market } from "./Market.sol";
+import { IMarket } from "./interfaces/IMarket.sol";
 
 contract PoolManager is IPoolManager {
   uint24 public constant FEE = 10_000;
@@ -18,26 +20,26 @@ contract PoolManager is IPoolManager {
   IUniswapV3Factory public immutable factory;
   INonfungiblePositionManager public immutable positionManager;
 
-  mapping(Market => uint256 tokenId) private _liquidity;
+  mapping(IMarket => uint256 tokenId) private _liquidity;
 
   constructor(address factory_, address positionManager_) {
     factory = IUniswapV3Factory(factory_);
     positionManager = INonfungiblePositionManager(positionManager_);
   }
 
-  function createPool(Market market, uint256 initialLiquidity) external override returns (address pool) {
+  function createPool(IMarket market, uint256 initialLiquidity) external override returns (address pool) {
     (address token0, address token1) = _tokens(market);
 
     pool = positionManager.createAndInitializePoolIfNecessary(token0, token1, FEE, 2 ** 96);
     _liquidity[market] = _mintLiquidity(market, initialLiquidity);
   }
 
-  function getPool(Market market) external view override returns (address pool) {
+  function getPool(IMarket market) external view override returns (address pool) {
     pool = _pool(market);
   }
 
-  function _mintLiquidity(Market market, uint256 amount) internal returns (uint256 tokenId) {
-    uint256 collateralAmount = market.price(amount);
+  function _mintLiquidity(IMarket market, uint256 amount) internal returns (uint256 tokenId) {
+    uint256 collateralAmount = Price.calculate(amount, market.unitPrice());
 
     market.collateralToken().transferFrom(msg.sender, address(this), collateralAmount);
     market.collateralToken().approve(address(market), collateralAmount);
@@ -68,13 +70,13 @@ contract PoolManager is IPoolManager {
     (tokenId,,,) = positionManager.mint(params);
   }
 
-  function _pool(Market market) internal view returns (address pool) {
+  function _pool(IMarket market) internal view returns (address pool) {
     (address tokenA, address tokenB) = _tokens(market);
 
     pool = factory.getPool(tokenA, tokenB, FEE);
   }
 
-  function _tokens(Market market) internal view returns (address token0, address token1) {
+  function _tokens(IMarket market) internal view returns (address token0, address token1) {
     address longToken = address(market.longToken());
     address shortToken = address(market.shortToken());
 

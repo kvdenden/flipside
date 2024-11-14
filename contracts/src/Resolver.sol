@@ -8,6 +8,7 @@ import { OptimisticOracleV3Interface } from
   "@uma/core/contracts/optimistic-oracle-v3/interfaces/OptimisticOracleV3Interface.sol";
 
 import { IResolver } from "./interfaces/IResolver.sol";
+import { IMarket } from "./interfaces/IMarket.sol";
 import { Outcome } from "./Outcome.sol";
 import { Outcomes } from "./lib/Outcomes.sol";
 
@@ -15,60 +16,50 @@ contract Resolver is IResolver {
   struct Query {
     bool resolved;
     Outcome outcome;
-    string description;
   }
 
   struct Assertion {
-    bytes32 queryId;
+    IMarket market;
     Outcome outcome;
   }
 
   OptimisticOracleV3Interface private immutable _oo;
   IERC20 public currency;
 
-  mapping(bytes32 => Query) public queries;
+  mapping(IMarket => Query) public queries;
   mapping(bytes32 => Assertion) public assertions;
 
-  event QueryInitialized(bytes32 indexed queryId);
-  event QueryAsserted(bytes32 indexed queryId, Outcome outcome);
-  event QueryResolved(bytes32 indexed queryId, Outcome outcome);
+  event MarketAsserted(address indexed market, Outcome outcome);
+  event MarketResolved(address indexed market, Outcome outcome);
 
   constructor(address oo_, address currency_) {
     _oo = OptimisticOracleV3Interface(oo_);
     currency = IERC20(currency_);
   }
 
-  function initializeQuery(string memory description_) external override returns (bytes32 queryId) {
-    queryId = keccak256(abi.encode(block.number, description_)); // TODO: check if queryId is unique
+  function assertOutcome(IMarket market, Outcome outcome_) external override returns (bytes32 assertionId) {
+    require(!queries[market].resolved, "Market resolved");
 
-    Query storage query = queries[queryId];
-    query.description = description_;
-
-    emit QueryInitialized(queryId);
-  }
-
-  function assertOutcome(bytes32 queryId, Outcome outcome_) external override returns (bytes32 assertionId) {
-    require(!queries[queryId].resolved, "Market resolved");
-
-    bytes memory claim = _claim(queryId, outcome_);
+    bytes memory claim = _claim(market, outcome_);
     address asserter = msg.sender;
     uint256 bond = _oo.getMinimumBond(address(currency));
 
     assertionId = _assertTruth(claim, asserter, bond);
-    assertions[assertionId] = Assertion(queryId, outcome_);
+    assertions[assertionId] = Assertion(market, outcome_);
 
-    emit QueryAsserted(queryId, outcome_);
+    emit MarketAsserted(address(market), outcome_);
   }
 
   function assertionResolvedCallback(bytes32 assertionId, bool assertedTruthfully) external {
     require(msg.sender == address(_oo), "Not authorized");
 
     if (assertedTruthfully) {
-      bytes32 queryId = assertions[assertionId].queryId;
-      queries[queryId].resolved = true;
-      queries[queryId].outcome = assertions[assertionId].outcome;
+      Assertion memory assertion = assertions[assertionId];
 
-      emit QueryResolved(queryId, queries[queryId].outcome);
+      queries[assertion.market].resolved = true;
+      queries[assertion.market].outcome = assertion.outcome;
+
+      emit MarketResolved(address(assertion.market), assertion.outcome);
     }
 
     delete assertions[assertionId];
@@ -76,16 +67,12 @@ contract Resolver is IResolver {
 
   function assertionDisputedCallback(bytes32 assertionId) external { }
 
-  function resolved(bytes32 queryId) public view override returns (bool) {
-    return queries[queryId].resolved;
+  function resolved(IMarket market) public view override returns (bool) {
+    return queries[market].resolved;
   }
 
-  function outcome(bytes32 queryId) public view override returns (Outcome) {
-    return queries[queryId].outcome;
-  }
-
-  function description(bytes32 queryId) public view override returns (string memory) {
-    return queries[queryId].description;
+  function outcome(IMarket market) public view override returns (Outcome) {
+    return queries[market].outcome;
   }
 
   function _assertTruth(bytes memory claim, address asserter, uint256 bond) private returns (bytes32 assertionId) {
@@ -94,15 +81,22 @@ contract Resolver is IResolver {
     );
   }
 
-  function _claim(bytes32 queryId, Outcome outcome_) private view returns (bytes memory) {
+  function _claim(IMarket market, Outcome outcome_) private view returns (bytes memory) {
     return abi.encodePacked(
-      "Query description: ",
-      queries[queryId].description,
+      "Title: ",
+      market.title(),
       "\n",
-      "Asserted outcome: ",
+      "Description: ",
+      market.description(),
+      "\n",
+      "Expiration: ",
+      Strings.toString(market.expirationDate()),
+      "\n",
+      "\n",
+      "Outcome: ",
       Outcomes.toString(outcome_),
       "\n",
-      "Assertion timestamp: ",
+      "Timestamp: ",
       Strings.toString(block.timestamp)
     );
   }
