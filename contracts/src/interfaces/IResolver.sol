@@ -5,9 +5,9 @@ import { Outcome } from "../Outcome.sol";
 import { IMarket } from "./IMarket.sol";
 
 interface IResolver {
-  function initializeQuery(IMarket market) external;
   function assertOutcome(IMarket market, Outcome outcome_) external returns (bytes32 assertionId);
 
   function resolved(IMarket market) external view returns (bool);
   function outcome(IMarket market) external view returns (Outcome);
+  function resolver(IMarket market) external view returns (address);
 }

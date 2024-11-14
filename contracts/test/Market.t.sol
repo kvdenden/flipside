@@ -86,7 +86,7 @@ contract MarketTest is Test {
     collateralToken.approve(address(market), 100 * 1e6);
     market.mint(address(this), 100 * 1e18);
 
-    market.resolve(Outcome.Yes);
+    resolver.assertOutcome(market, Outcome.Yes);
 
     market.longToken().approve(address(market), 100 * 1e18);
     market.shortToken().approve(address(market), 100 * 1e18);
@@ -101,7 +101,7 @@ contract MarketTest is Test {
     collateralToken.approve(address(market), 100 * 1e6);
     market.mint(address(this), 100 * 1e18);
 
-    market.resolve(Outcome.Yes);
+    resolver.assertOutcome(market, Outcome.Yes);
 
     market.shortToken().approve(address(market), 100 * 1e18);
     market.settle(address(this), 0, 100 * 1e18);
@@ -117,7 +117,7 @@ contract MarketTest is Test {
     collateralToken.approve(address(market), 100 * 1e6);
     market.mint(address(this), 100 * 1e18);
 
-    market.resolve(Outcome.No);
+    resolver.assertOutcome(market, Outcome.No);
 
     market.longToken().approve(address(market), 100 * 1e18);
     market.settle(address(this), 100 * 1e18, 0);
@@ -133,7 +133,7 @@ contract MarketTest is Test {
     collateralToken.approve(address(market), 100 * 1e6);
     market.mint(address(this), 100 * 1e18);
 
-    market.resolve(Outcome.No);
+    resolver.assertOutcome(market, Outcome.Invalid);
 
     market.longToken().approve(address(market), 100 * 1e18);
     market.shortToken().approve(address(market), 100 * 1e18);

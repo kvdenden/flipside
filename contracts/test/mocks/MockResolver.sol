@@ -2,40 +2,35 @@
 pragma solidity ^0.8.23;
 
 import { IResolver } from "../../src/interfaces/IResolver.sol";
+import { IMarket } from "../../src/interfaces/IMarket.sol";
 import { Outcome } from "../../src/Outcome.sol";
 
 contract MockResolver is IResolver {
   struct Query {
     bool resolved;
     Outcome outcome;
-    string description;
+    address resolver;
   }
 
-  mapping(bytes32 queryId => Query) public queries;
+  mapping(IMarket => Query) public queries;
 
-  function initializeQuery(string memory description_) external override returns (bytes32 queryId) {
-    queryId = keccak256(abi.encode(block.number, description_));
-    Query storage query = queries[queryId];
-    query.description = description_;
-  }
+  function assertOutcome(IMarket market, Outcome outcome_) external override returns (bytes32 assertionId) {
+    assertionId = keccak256(abi.encode(block.number, address(market), outcome_));
 
-  function assertOutcome(bytes32 queryId, Outcome outcome_) external override returns (bytes32 assertionId) {
-    assertionId = keccak256(abi.encode(block.number, queryId, outcome_));
-
-    Query storage query = queries[queryId];
+    Query storage query = queries[market];
     query.resolved = true;
     query.outcome = outcome_;
   }
 
-  function resolved(bytes32 queryId) external view returns (bool) {
-    return queries[queryId].resolved;
+  function resolved(IMarket market) external view returns (bool) {
+    return queries[market].resolved;
   }
 
-  function outcome(bytes32 queryId) external view returns (Outcome) {
-    return queries[queryId].outcome;
+  function outcome(IMarket market) external view returns (Outcome) {
+    return queries[market].outcome;
   }
 
-  function description(bytes32 queryId) external view returns (string memory) {
-    return queries[queryId].description;
+  function resolver(IMarket market) public view override returns (address) {
+    return queries[market].resolver;
   }
 }

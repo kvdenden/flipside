@@ -16,11 +16,13 @@ contract Resolver is IResolver {
   struct Query {
     bool resolved;
     Outcome outcome;
+    address resolver;
   }
 
   struct Assertion {
     IMarket market;
     Outcome outcome;
+    address asserter;
   }
 
   OptimisticOracleV3Interface private immutable _oo;
@@ -45,7 +47,7 @@ contract Resolver is IResolver {
     uint256 bond = _oo.getMinimumBond(address(currency));
 
     assertionId = _assertTruth(claim, asserter, bond);
-    assertions[assertionId] = Assertion(market, outcome_);
+    assertions[assertionId] = Assertion(market, outcome_, asserter);
 
     emit MarketAsserted(address(market), outcome_);
   }
@@ -58,6 +60,7 @@ contract Resolver is IResolver {
 
       queries[assertion.market].resolved = true;
       queries[assertion.market].outcome = assertion.outcome;
+      queries[assertion.market].resolver = assertion.asserter;
 
       emit MarketResolved(address(assertion.market), assertion.outcome);
     }
@@ -73,6 +76,10 @@ contract Resolver is IResolver {
 
   function outcome(IMarket market) public view override returns (Outcome) {
     return queries[market].outcome;
+  }
+
+  function resolver(IMarket market) public view override returns (address) {
+    return queries[market].resolver;
   }
 
   function _assertTruth(bytes memory claim, address asserter, uint256 bond) private returns (bytes32 assertionId) {
