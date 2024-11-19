@@ -20,7 +20,7 @@ contract Resolver is IResolver {
   }
 
   struct Assertion {
-    IMarket market;
+    address market;
     Outcome outcome;
     address asserter;
   }
@@ -28,7 +28,7 @@ contract Resolver is IResolver {
   OptimisticOracleV3Interface private immutable _oo;
   IERC20 public currency;
 
-  mapping(IMarket => Query) public queries;
+  mapping(address => Query) public queries;
   mapping(bytes32 => Assertion) public assertions;
 
   event MarketAsserted(address indexed market, Outcome outcome);
@@ -39,17 +39,17 @@ contract Resolver is IResolver {
     currency = IERC20(currency_);
   }
 
-  function assertOutcome(IMarket market, Outcome outcome_) external override returns (bytes32 assertionId) {
+  function assertOutcome(address market, Outcome outcome_) external override returns (bytes32 assertionId) {
     require(!queries[market].resolved, "Market resolved");
 
-    bytes memory claim = _claim(market, outcome_);
+    bytes memory claim = _claim(IMarket(market), outcome_);
     address asserter = msg.sender;
     uint256 bond = _oo.getMinimumBond(address(currency));
 
     assertionId = _assertTruth(claim, asserter, bond);
     assertions[assertionId] = Assertion(market, outcome_, asserter);
 
-    emit MarketAsserted(address(market), outcome_);
+    emit MarketAsserted(market, outcome_);
   }
 
   function assertionResolvedCallback(bytes32 assertionId, bool assertedTruthfully) external {
@@ -70,15 +70,15 @@ contract Resolver is IResolver {
 
   function assertionDisputedCallback(bytes32 assertionId) external { }
 
-  function resolved(IMarket market) public view override returns (bool) {
+  function resolved(address market) public view override returns (bool) {
     return queries[market].resolved;
   }
 
-  function outcome(IMarket market) public view override returns (Outcome) {
+  function outcome(address market) public view override returns (Outcome) {
     return queries[market].outcome;
   }
 
-  function resolver(IMarket market) public view override returns (address) {
+  function resolver(address market) public view override returns (address) {
     return queries[market].resolver;
   }
 

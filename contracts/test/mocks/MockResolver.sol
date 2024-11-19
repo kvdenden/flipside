@@ -2,7 +2,6 @@
 pragma solidity ^0.8.23;
 
 import { IResolver } from "../../src/interfaces/IResolver.sol";
-import { IMarket } from "../../src/interfaces/IMarket.sol";
 import { Outcome } from "../../src/Outcome.sol";
 
 contract MockResolver is IResolver {
@@ -12,9 +11,9 @@ contract MockResolver is IResolver {
     address resolver;
   }
 
-  mapping(IMarket => Query) public queries;
+  mapping(address => Query) public queries;
 
-  function assertOutcome(IMarket market, Outcome outcome_) external override returns (bytes32 assertionId) {
+  function assertOutcome(address market, Outcome outcome_) external override returns (bytes32 assertionId) {
     assertionId = keccak256(abi.encode(block.number, address(market), outcome_));
 
     Query storage query = queries[market];
@@ -22,15 +21,15 @@ contract MockResolver is IResolver {
     query.outcome = outcome_;
   }
 
-  function resolved(IMarket market) external view returns (bool) {
+  function resolved(address market) external view returns (bool) {
     return queries[market].resolved;
   }
 
-  function outcome(IMarket market) external view returns (Outcome) {
+  function outcome(address market) external view returns (Outcome) {
     return queries[market].outcome;
   }
 
-  function resolver(IMarket market) public view override returns (address) {
+  function resolver(address market) public view override returns (address) {
     return queries[market].resolver;
   }
 }

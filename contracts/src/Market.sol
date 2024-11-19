@@ -129,11 +129,11 @@ contract Market is IMarket {
   }
 
   function resolved() public view returns (bool) {
-    return _resolver.resolved(this);
+    return _resolver.resolved(address(this));
   }
 
   function outcome() public view whenResolved returns (Outcome) {
-    return _resolver.outcome(this);
+    return _resolver.outcome(address(this));
   }
 
   function _payout(address to, uint256 amount) private {
