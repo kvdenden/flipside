@@ -1,6 +1,6 @@
 namespace NodeJS {
   interface ProcessEnv {
-    NEXT_PUBLIC_CHAIN?: "mainnet";
+    NEXT_PUBLIC_CHAIN?: "mainnet" | "testnet";
 
     NEXT_PUBLIC_API_URL: string;
 

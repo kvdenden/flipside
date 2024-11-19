@@ -106,13 +106,6 @@ export const marketAbi = [
   },
   {
     type: 'function',
-    inputs: [{ name: 'outcome_', internalType: 'enum Outcome', type: 'uint8' }],
-    name: 'resolve',
-    outputs: [],
-    stateMutability: 'nonpayable',
-  },
-  {
-    type: 'function',
     inputs: [],
     name: 'resolved',
     outputs: [{ name: '', internalType: 'bool', type: 'bool' }],

@@ -51,7 +51,7 @@ export const flipsideAbi = [
   {
     type: 'function',
     inputs: [
-      { name: 'market', internalType: 'contract Market', type: 'address' },
+      { name: 'market', internalType: 'contract IMarket', type: 'address' },
       { name: 'to', internalType: 'address', type: 'address' },
       { name: 'amount', internalType: 'uint256', type: 'uint256' },
       { name: 'amountOutMin', internalType: 'uint256', type: 'uint256' },
@@ -64,7 +64,7 @@ export const flipsideAbi = [
   {
     type: 'function',
     inputs: [
-      { name: 'market', internalType: 'contract Market', type: 'address' },
+      { name: 'market', internalType: 'contract IMarket', type: 'address' },
       { name: 'to', internalType: 'address', type: 'address' },
       { name: 'amount', internalType: 'uint256', type: 'uint256' },
     ],
@@ -187,13 +187,6 @@ export const marketAbi = [
       { name: 'amount', internalType: 'uint256', type: 'uint256' },
     ],
     name: 'redeem',
-    outputs: [],
-    stateMutability: 'nonpayable',
-  },
-  {
-    type: 'function',
-    inputs: [{ name: 'outcome_', internalType: 'enum Outcome', type: 'uint8' }],
-    name: 'resolve',
     outputs: [],
     stateMutability: 'nonpayable',
   },

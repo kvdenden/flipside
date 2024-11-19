@@ -10,7 +10,7 @@ import { Outcome } from "../src/Outcome.sol";
 import {Outcomes} from "../src/lib/Outcomes.sol";
 
 
-contract AssertOutcome is Script {
+contract ResolveMarket is Script {
   using Strings for string;
   using Outcomes for Outcome;
 
@@ -26,23 +26,23 @@ contract AssertOutcome is Script {
     console.log("Asserting outcome for market %s with outcome %s", market, outcome.toString());
 
     vm.startBroadcast(privateKey);
-    
+
     Resolver(resolver).assertOutcome(market, outcome);
-    
+
     vm.stopBroadcast();
   }
 
   function _promptOutcome() internal returns (Outcome) {
       string memory outcome = vm.prompt("Enter outcome (Y/N/?): ");
-      
+
       if (outcome.equal("Y") || outcome.equal("y")) {
         return Outcome.Yes;
       }
-      
+
       if (outcome.equal("N") || outcome.equal("n")) {
         return Outcome.No;
       }
-      
+
       return Outcome.Invalid;
   }
 }
