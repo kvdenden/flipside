@@ -30,6 +30,7 @@ export default function ActionGuard({ token, amount, spender, buttonProps, child
     args: [address],
     query: {
       enabled: isConnected,
+      refetchInterval: 10000,
     },
   });
 

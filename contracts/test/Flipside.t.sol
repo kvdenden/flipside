@@ -29,7 +29,7 @@ contract FlipsideTest is Test {
 
     collateralToken = new MockERC20();
 
-    Resolver resolver = new Resolver(oo, usdc);
+    Resolver resolver = new Resolver(oo, usdc, 250 * 1e6);
     RewardManager rewardManager = new RewardManager(address(this), 5_000);
     PoolManager poolManager = new PoolManager(factory, positionManager);
     MarketFactory marketFactory = new MarketFactory(address(resolver), address(rewardManager), address(poolManager));

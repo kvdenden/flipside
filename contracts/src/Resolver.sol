@@ -26,6 +26,8 @@ contract Resolver is IResolver {
   }
 
   OptimisticOracleV3Interface private immutable _oo;
+  uint256 private _bond;
+
   IERC20 public currency;
 
   mapping(address => Query) public queries;
@@ -34,8 +36,9 @@ contract Resolver is IResolver {
   event MarketAsserted(address indexed market, Outcome outcome);
   event MarketResolved(address indexed market, Outcome outcome);
 
-  constructor(address oo_, address currency_) {
+  constructor(address oo_, address currency_, uint256 bond_) {
     _oo = OptimisticOracleV3Interface(oo_);
+    _bond = bond_;
     currency = IERC20(currency_);
   }
 
@@ -44,9 +47,12 @@ contract Resolver is IResolver {
 
     bytes memory claim = _claim(IMarket(market), outcome_);
     address asserter = msg.sender;
-    uint256 bond = _oo.getMinimumBond(address(currency));
+    uint256 bond_ = bond();
 
-    assertionId = _assertTruth(claim, asserter, bond);
+    currency.transferFrom(asserter, address(this), bond_);
+    currency.approve(address(_oo), bond_);
+
+    assertionId = _assertTruth(claim, asserter, bond_);
     assertions[assertionId] = Assertion(market, outcome_, asserter);
 
     emit MarketAsserted(market, outcome_);
@@ -70,6 +76,12 @@ contract Resolver is IResolver {
 
   function assertionDisputedCallback(bytes32 assertionId) external { }
 
+  function bond() public view returns (uint256) {
+    uint256 minimumBond = _oo.getMinimumBond(address(currency));
+
+    return minimumBond > _bond ? minimumBond : _bond;
+  }
+
   function resolved(address market) public view override returns (bool) {
     return queries[market].resolved;
   }
@@ -82,9 +94,9 @@ contract Resolver is IResolver {
     return queries[market].resolver;
   }
 
-  function _assertTruth(bytes memory claim, address asserter, uint256 bond) private returns (bytes32 assertionId) {
+  function _assertTruth(bytes memory claim, address asserter, uint256 bond_) private returns (bytes32 assertionId) {
     assertionId = _oo.assertTruth(
-      claim, asserter, address(this), address(0), 7200, currency, bond, _oo.defaultIdentifier(), bytes32(0)
+      claim, asserter, address(this), address(0), 7200, currency, bond_, _oo.defaultIdentifier(), bytes32(0)
     );
   }
 

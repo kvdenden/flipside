@@ -27,7 +27,7 @@ contract MarketFactoryTest is Test {
 
     collateralToken = new MockERC20();
 
-    resolver = new Resolver(oo, usdc);
+    resolver = new Resolver(oo, usdc, 250 * 1e6);
     rewardManager = new RewardManager(address(this), 5_000);
     poolManager = new PoolManager(factory, positionManager);
     marketFactory = new MarketFactory(address(resolver), address(rewardManager), address(poolManager));

@@ -29,7 +29,7 @@ contract Deploy is Script {
 
     vm.startBroadcast();
 
-    resolver = new Resolver(oo, usdc);
+    resolver = new Resolver(oo, usdc, 250 * 1e6);
     console.log("Resolver deployed at:", address(resolver));
 
     poolManager = new PoolManager(factory, positionManager);

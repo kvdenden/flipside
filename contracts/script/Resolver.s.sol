@@ -17,7 +17,7 @@ contract Deploy is Script {
 
     vm.startBroadcast(privateKey);
 
-    resolver = new Resolver(oo, usdc);
+    resolver = new Resolver(oo, usdc, 250 * 1e6);
     console.log("Resolver deployed at:", address(resolver));
 
     vm.stopBroadcast();
