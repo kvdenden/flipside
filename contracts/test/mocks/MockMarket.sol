@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-import {IMarket} from "../../src/interfaces/IMarket.sol";
-import {IResolver} from "../../src/interfaces/IResolver.sol";
+import { IMarket } from "../../src/interfaces/IMarket.sol";
+import { IResolver } from "../../src/interfaces/IResolver.sol";
 
-import {Outcome} from "../../src/Outcome.sol";
-import {OutcomeToken} from "../../src/OutcomeToken.sol";
+import { Outcome } from "../../src/Outcome.sol";
+import { OutcomeToken } from "../../src/OutcomeToken.sol";
 
 contract MockMarket is IMarket {
   address public creator;
@@ -20,12 +20,12 @@ contract MockMarket is IMarket {
   OutcomeToken public shortToken;
 
   IResolver private _resolver;
-  
-  constructor(address resolver) {
+
+  constructor(address resolver_) {
     longToken = new OutcomeToken(address(this), "Long", "LONG");
     shortToken = new OutcomeToken(address(this), "Short", "SHORT");
 
-    _resolver = IResolver(resolver);
+    _resolver = IResolver(resolver_);
   }
 
   function setCreator(address creator_) external {
@@ -52,6 +52,10 @@ contract MockMarket is IMarket {
     unitPrice = unitPrice_;
   }
 
+  function resolver() external view override returns (address) {
+    return address(_resolver);
+  }
+
   function resolved() external view override returns (bool) {
     return _resolver.resolved(address(this));
   }
@@ -60,7 +64,7 @@ contract MockMarket is IMarket {
     return _resolver.outcome(address(this));
   }
 
-  function mint(address to, uint256 amount) external override {}
-  function redeem(address to, uint256 amount) external override {}
-  function settle(address to, uint256 longAmount, uint256 shortAmount) external override returns (uint256) {}
+  function mint(address to, uint256 amount) external override { }
+  function redeem(address to, uint256 amount) external override { }
+  function settle(address to, uint256 longAmount, uint256 shortAmount) external override returns (uint256) { }
 }

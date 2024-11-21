@@ -128,6 +128,10 @@ contract Market is IMarket {
     return price(amount).ceilDiv(100);
   }
 
+  function resolver() public view override returns (address) {
+    return address(_resolver);
+  }
+
   function resolved() public view returns (bool) {
     return _resolver.resolved(address(this));
   }

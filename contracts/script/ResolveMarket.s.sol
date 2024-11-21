@@ -2,13 +2,12 @@
 pragma solidity ^0.8.23;
 
 import { Script, console } from "forge-std/Script.sol";
-import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
+import { Strings } from "@openzeppelin/contracts/utils/Strings.sol";
 
 import { Resolver } from "../src/Resolver.sol";
 import { Outcome } from "../src/Outcome.sol";
 
-import {Outcomes} from "../src/lib/Outcomes.sol";
-
+import { Outcomes } from "../src/lib/Outcomes.sol";
 
 contract ResolveMarket is Script {
   using Strings for string;
@@ -19,7 +18,7 @@ contract ResolveMarket is Script {
   function run() public {
     uint256 privateKey = vm.envUint("PRIVATE_KEY");
 
-    address resolver = vm.envAddress("RESOLVER_CONTRACT_ADDRESS");
+    Resolver resolver = Resolver(vm.envAddress("RESOLVER_CONTRACT_ADDRESS"));
 
     address market = vm.promptAddress("Enter market address");
     Outcome outcome = _promptOutcome();
@@ -27,22 +26,23 @@ contract ResolveMarket is Script {
 
     vm.startBroadcast(privateKey);
 
-    Resolver(resolver).assertOutcome(market, outcome);
+    resolver.currency().approve(address(resolver), resolver.bond());
+    resolver.assertOutcome(market, outcome);
 
     vm.stopBroadcast();
   }
 
   function _promptOutcome() internal returns (Outcome) {
-      string memory outcome = vm.prompt("Enter outcome (Y/N/?): ");
+    string memory outcome = vm.prompt("Enter outcome (Y/N/?): ");
 
-      if (outcome.equal("Y") || outcome.equal("y")) {
-        return Outcome.Yes;
-      }
+    if (outcome.equal("Y") || outcome.equal("y")) {
+      return Outcome.Yes;
+    }
 
-      if (outcome.equal("N") || outcome.equal("n")) {
-        return Outcome.No;
-      }
+    if (outcome.equal("N") || outcome.equal("n")) {
+      return Outcome.No;
+    }
 
-      return Outcome.Invalid;
+    return Outcome.Invalid;
   }
 }

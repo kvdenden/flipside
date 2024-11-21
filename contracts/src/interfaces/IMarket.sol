@@ -15,6 +15,8 @@ interface IMarket {
   function longToken() external view returns (OutcomeToken);
   function shortToken() external view returns (OutcomeToken);
 
+  function resolver() external view returns (address);
+
   function resolved() external view returns (bool);
   function outcome() external view returns (Outcome);
 
