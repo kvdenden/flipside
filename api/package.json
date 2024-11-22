@@ -9,7 +9,9 @@
     "serve": "ponder serve",
     "lint": "eslint .",
     "typecheck": "tsc",
-    "generate-abi": "wagmi generate"
+    "generate-abi": "wagmi generate",
+    "get-address": "scripts/get-address.sh",
+    "get-block": "scripts/get-block.sh"
   },
   "dependencies": {
     "@ponder/core": "^0.6.4",

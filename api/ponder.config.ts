@@ -1,8 +1,6 @@
 import { createConfig } from "@ponder/core";
-import { getAddress, http, parseAbiItem, zeroAddress } from "viem";
+import { http, parseAbiItem } from "viem";
 import { marketAbi, marketFactoryAbi } from "./abis/flipside";
-
-import Deploy from "../contracts/broadcast/Deploy.s.sol/31337/run-latest.json";
 
 function getNetwork() {
   switch (process.env.PONDER_NETWORK) {
@@ -15,29 +13,10 @@ function getNetwork() {
   }
 }
 
-function address(contract: string) {
-  const tx = Deploy.transactions.find((tx) => tx.transactionType === "CREATE" && tx.contractName === contract);
-  if (!tx) return;
-
-  return getAddress(tx.contractAddress);
-}
-
-function startBlock(contract: string) {
-  const tx = Deploy.transactions.find((tx) => tx.transactionType === "CREATE" && tx.contractName === contract);
-  if (!tx) return;
-
-  const receipt = Deploy.receipts.find((receipt) => receipt.transactionHash === tx.hash);
-  if (!receipt) return;
-
-  console.log("Start block for", contract, "is", parseInt(receipt.blockNumber));
-
-  return parseInt(receipt.blockNumber);
-}
-
 const network = getNetwork();
 
-const marketFactoryAddress = process.env.MARKET_FACTORY_CONTRACT_ADDRESS || address("MarketFactory")!;
-const marketFactoryStartBlock = process.env.PONDER_START_BLOCK || startBlock("MarketFactory")!;
+const marketFactoryAddress = process.env.MARKET_FACTORY_CONTRACT_ADDRESS;
+const marketFactoryStartBlock = process.env.PONDER_START_BLOCK;
 
 export default createConfig({
   networks: {
