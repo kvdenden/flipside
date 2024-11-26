@@ -1,6 +1,6 @@
 import { createConfig } from "@ponder/core";
 import { http, parseAbiItem } from "viem";
-import { marketAbi, marketFactoryAbi } from "./abis/flipside";
+import { marketAbi, marketFactoryAbi, resolverAbi } from "./abis/flipside";
 
 function getNetwork() {
   switch (process.env.PONDER_NETWORK) {
@@ -15,8 +15,10 @@ function getNetwork() {
 
 const network = getNetwork();
 
+const startBlock = process.env.PONDER_START_BLOCK;
+
 const marketFactoryAddress = process.env.MARKET_FACTORY_CONTRACT_ADDRESS;
-const marketFactoryStartBlock = process.env.PONDER_START_BLOCK;
+const resolverAddress = process.env.RESOLVER_CONTRACT_ADDRESS;
 
 export default createConfig({
   networks: {
@@ -39,7 +41,7 @@ export default createConfig({
       abi: marketFactoryAbi,
       network,
       address: marketFactoryAddress,
-      startBlock: marketFactoryStartBlock,
+      startBlock,
     },
     Market: {
       abi: marketAbi,
@@ -51,7 +53,13 @@ export default createConfig({
         ),
         parameter: "market",
       },
-      startBlock: marketFactoryStartBlock,
+      startBlock,
+    },
+    Resolver: {
+      abi: resolverAbi,
+      network,
+      address: resolverAddress,
+      startBlock,
     },
   },
 });

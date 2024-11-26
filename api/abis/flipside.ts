@@ -113,6 +113,13 @@ export const marketAbi = [
   },
   {
     type: 'function',
+    inputs: [],
+    name: 'resolver',
+    outputs: [{ name: '', internalType: 'address', type: 'address' }],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
     inputs: [
       { name: 'to', internalType: 'address', type: 'address' },
       { name: 'longAmount', internalType: 'uint256', type: 'uint256' },
@@ -294,5 +301,145 @@ export const marketFactoryAbi = [
       },
     ],
     name: 'MarketCreated',
+  },
+] as const
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Resolver
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+export const resolverAbi = [
+  {
+    type: 'constructor',
+    inputs: [
+      { name: 'oo_', internalType: 'address', type: 'address' },
+      { name: 'currency_', internalType: 'address', type: 'address' },
+      { name: 'bond_', internalType: 'uint256', type: 'uint256' },
+    ],
+    stateMutability: 'nonpayable',
+  },
+  {
+    type: 'function',
+    inputs: [
+      { name: 'market', internalType: 'address', type: 'address' },
+      { name: 'outcome_', internalType: 'enum Outcome', type: 'uint8' },
+    ],
+    name: 'assertOutcome',
+    outputs: [
+      { name: 'assertionId', internalType: 'bytes32', type: 'bytes32' },
+    ],
+    stateMutability: 'nonpayable',
+  },
+  {
+    type: 'function',
+    inputs: [{ name: 'assertionId', internalType: 'bytes32', type: 'bytes32' }],
+    name: 'assertionDisputedCallback',
+    outputs: [],
+    stateMutability: 'nonpayable',
+  },
+  {
+    type: 'function',
+    inputs: [
+      { name: 'assertionId', internalType: 'bytes32', type: 'bytes32' },
+      { name: 'assertedTruthfully', internalType: 'bool', type: 'bool' },
+    ],
+    name: 'assertionResolvedCallback',
+    outputs: [],
+    stateMutability: 'nonpayable',
+  },
+  {
+    type: 'function',
+    inputs: [{ name: '', internalType: 'bytes32', type: 'bytes32' }],
+    name: 'assertions',
+    outputs: [
+      { name: 'market', internalType: 'address', type: 'address' },
+      { name: 'outcome', internalType: 'enum Outcome', type: 'uint8' },
+      { name: 'asserter', internalType: 'address', type: 'address' },
+    ],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
+    inputs: [],
+    name: 'bond',
+    outputs: [{ name: '', internalType: 'uint256', type: 'uint256' }],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
+    inputs: [],
+    name: 'currency',
+    outputs: [{ name: '', internalType: 'contract IERC20', type: 'address' }],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
+    inputs: [{ name: 'market', internalType: 'address', type: 'address' }],
+    name: 'outcome',
+    outputs: [{ name: '', internalType: 'enum Outcome', type: 'uint8' }],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
+    inputs: [{ name: '', internalType: 'address', type: 'address' }],
+    name: 'queries',
+    outputs: [
+      { name: 'resolved', internalType: 'bool', type: 'bool' },
+      { name: 'outcome', internalType: 'enum Outcome', type: 'uint8' },
+      { name: 'resolver', internalType: 'address', type: 'address' },
+    ],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
+    inputs: [{ name: 'market', internalType: 'address', type: 'address' }],
+    name: 'resolved',
+    outputs: [{ name: '', internalType: 'bool', type: 'bool' }],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
+    inputs: [{ name: 'market', internalType: 'address', type: 'address' }],
+    name: 'resolver',
+    outputs: [{ name: '', internalType: 'address', type: 'address' }],
+    stateMutability: 'view',
+  },
+  {
+    type: 'event',
+    anonymous: false,
+    inputs: [
+      {
+        name: 'market',
+        internalType: 'address',
+        type: 'address',
+        indexed: true,
+      },
+      {
+        name: 'outcome',
+        internalType: 'enum Outcome',
+        type: 'uint8',
+        indexed: false,
+      },
+    ],
+    name: 'MarketAsserted',
+  },
+  {
+    type: 'event',
+    anonymous: false,
+    inputs: [
+      {
+        name: 'market',
+        internalType: 'address',
+        type: 'address',
+        indexed: true,
+      },
+      {
+        name: 'outcome',
+        internalType: 'enum Outcome',
+        type: 'uint8',
+        indexed: false,
+      },
+    ],
+    name: 'MarketResolved',
   },
 ] as const

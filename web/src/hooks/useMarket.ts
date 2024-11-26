@@ -32,7 +32,8 @@ export type Market = {
 const fetchMarket = async (marketId: `0x${string}`): Promise<Market | undefined> => {
   const response = await fetch(process.env.NEXT_PUBLIC_API_URL + `/markets/${marketId}`);
   if (response.ok) {
-    const { Market: market, Pool: pool } = await response.json();
+    const market = await response.json();
+    const pool = market.pools[0];
 
     return {
       id: market.id,

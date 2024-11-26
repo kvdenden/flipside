@@ -1,35 +1,45 @@
-import { createSchema } from "@ponder/core";
+import { onchainEnum, onchainTable, relations, index } from "@ponder/core";
 
-export default createSchema((p) => ({
-  Outcome: p.createEnum(["YES", "NO", "INVALID"]),
-  Market: p.createTable({
-    id: p.hex(),
-    creator: p.hex(),
-    collateralToken: p.hex(),
-    unitPrice: p.bigint(),
-    title: p.string(),
-    description: p.string(),
-    expirationDate: p.int(),
-    longToken: p.hex(),
-    shortToken: p.hex(),
-    resolved: p.boolean(),
-    outcome: p.enum("Outcome").optional(),
+export const outcomes = onchainEnum("outcomes", ["No", "Yes", "Invalid"]);
 
-    pools: p.many("Pool.marketId"),
+export const markets = onchainTable("markets", (t) => ({
+  id: t.hex().primaryKey(),
+  creator: t.hex().notNull(),
+  collateralToken: t.hex().notNull(),
+  unitPrice: t.bigint().notNull(),
+  title: t.text().notNull(),
+  description: t.text().notNull(),
+  expirationDate: t.bigint().notNull(),
+  longToken: t.hex().notNull(),
+  shortToken: t.hex().notNull(),
 
-    createdAt: p.int(),
+  resolved: t.boolean().default(false),
+  outcome: outcomes(),
+
+  createdAt: t.bigint().notNull(),
+}));
+
+export const marketsRelations = relations(markets, ({ many }) => ({
+  pools: many(pools),
+}));
+
+export const pools = onchainTable(
+  "pools",
+  (t) => ({
+    id: t.hex().primaryKey(),
+    // token0: t.hex(),
+    // token1: t.hex(),
+    initialLiquidity: t.bigint(),
+    marketId: t.hex().notNull(),
   }),
-  Pool: p.createTable(
-    {
-      id: p.hex(),
-      // token0: p.hex(),
-      // token1: p.hex(),
-      initialLiquidity: p.bigint(),
+  (table) => ({
+    marketIdIndex: index().on(table.marketId),
+  })
+);
 
-      marketId: p.hex().references("Market.id"),
-
-      market: p.one("marketId"),
-    },
-    { marketIdIndex: p.index("marketId") }
-  ),
+export const poolsRelations = relations(pools, ({ one }) => ({
+  market: one(markets, {
+    fields: [pools.marketId],
+    references: [markets.id],
+  }),
 }));

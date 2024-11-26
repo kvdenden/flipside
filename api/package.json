@@ -14,7 +14,7 @@
     "get-block": "scripts/get-block.sh"
   },
   "dependencies": {
-    "@ponder/core": "^0.6.4",
+    "@ponder/core": "0.7",
     "hono": "^4.5.0",
     "viem": "^2.21.3"
   },

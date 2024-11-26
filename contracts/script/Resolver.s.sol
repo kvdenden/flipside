@@ -13,11 +13,13 @@ contract Deploy is Script {
     uint256 privateKey = vm.envUint("PRIVATE_KEY");
 
     address oo = vm.envAddress("UMA_OOV3");
-    address usdc = vm.envAddress("USDC");
+
+    address currency = vm.envAddress("BOND_CURRENCY");
+    uint256 amount = vm.envUint("BOND_AMOUNT");
 
     vm.startBroadcast(privateKey);
 
-    resolver = new Resolver(oo, usdc, 250 * 1e6);
+    resolver = new Resolver(oo, currency, amount);
     console.log("Resolver deployed at:", address(resolver));
 
     vm.stopBroadcast();
