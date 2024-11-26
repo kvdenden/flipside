@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useMemo } from "react";
-import { formatUnits, zeroAddress } from "viem";
+import { zeroAddress } from "viem";
 import { useAccount, useReadContract } from "wagmi";
 
 import { erc20Abi } from "viem";

@@ -1,24 +1,7 @@
 "use client";
 
-import React, { useCallback, useEffect, useState } from "react";
-import {
-  Autocomplete,
-  AutocompleteItem,
-  Button,
-  DatePicker,
-  Divider,
-  Input,
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalProps,
-  Select,
-  SelectItem,
-  Skeleton,
-  Textarea,
-} from "@nextui-org/react";
+import { useCallback, useState } from "react";
+import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalProps } from "@nextui-org/react";
 
 import NiceModal, { useModal } from "@ebay/nice-modal-react";
 
@@ -28,7 +11,6 @@ import ResolveMarketButton from "./ResolveMarketButton";
 import useBond from "@/hooks/useBond";
 import { zeroAddress } from "viem";
 import SelectOutcome from "./SelectOutcome";
-import { format } from "path";
 import TokenAmount from "./TokenAmount";
 
 const RESOLVER_ADDRESS = process.env.NEXT_PUBLIC_RESOLVER_CONTRACT_ADDRESS;
