@@ -82,7 +82,7 @@ function CreateMarketModal({
 
   const { address } = useAccount();
 
-  const { data: collateralToken } = useToken(marketData.collateralToken as `0x${string}`);
+  const { data: collateralToken, isLoading } = useToken(marketData.collateralToken as `0x${string}`);
 
   const unitPrice = collateralToken ? parseUnits(marketData.unitPrice, collateralToken.decimals) : BigInt(0);
   const initialLiquidity = BigInt(10 * 1e18);
@@ -210,20 +210,22 @@ function CreateMarketModal({
                       isReadOnly={isSuggestionLoading}
                     />
                   </Skeleton>
-                  <DatePicker
-                    label="Expiration Date"
-                    granularity="minute"
-                    hideTimeZone
-                    showMonthAndYearPickers
-                    value={marketData.expirationDate}
-                    onChange={(value) => {
-                      setMarketData((prevState) => ({
-                        ...prevState,
-                        expirationDate: value,
-                      }));
-                    }}
-                    minValue={now(getLocalTimeZone()).add({ hours: 24 })}
-                  />
+                  <Skeleton isLoaded={!isSuggestionLoading} className="rounded-xl">
+                    <DatePicker
+                      label="Expiration Date"
+                      granularity="minute"
+                      hideTimeZone
+                      showMonthAndYearPickers
+                      value={marketData.expirationDate}
+                      onChange={(value) => {
+                        setMarketData((prevState) => ({
+                          ...prevState,
+                          expirationDate: value,
+                        }));
+                      }}
+                      minValue={now(getLocalTimeZone()).add({ hours: 1 })}
+                    />
+                  </Skeleton>
                 </div>
                 <div className="space-y-2">
                   <h3 className="font-semibold">Unit Price</h3>
@@ -261,6 +263,7 @@ function CreateMarketModal({
             </ModalBody>
             <ModalFooter>
               <ActionGuard
+                isLoading={isLoading}
                 token={collateralToken ? collateralToken.address : zeroAddress}
                 amount={price}
                 spender={FLIPSIDE_ADDRESS}

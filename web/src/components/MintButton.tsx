@@ -40,7 +40,7 @@ export default function MintButton({ marketId, outcome, amount = 1, onMint = () 
           address: FLIPSIDE_ADDRESS,
           abi: FLIPSIDE_ABI,
           functionName: "mintOutcome",
-          args: [marketId, address ?? zeroAddress, BigInt(amount * 1e18), BigInt(0), outcome === Outcome.YES],
+          args: [marketId, address ?? zeroAddress, BigInt(amount * 1e18), BigInt(0), outcome === Outcome.Yes],
         });
       }}
       isDisabled={isDisabled}

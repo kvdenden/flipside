@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [
     foundry({
       project: "../contracts",
-      include: ["Flipside.sol/**", "Market.sol/**"],
+      include: ["Flipside.sol/**", "Market.sol/**", "Resolver.sol/**"],
     }),
   ],
 });

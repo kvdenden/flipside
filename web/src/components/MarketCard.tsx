@@ -8,6 +8,7 @@ import useMarket, { Outcome } from "@/hooks/useMarket";
 import usePool from "@/hooks/usePool";
 
 import MintModal from "./MintModal";
+import ResolveMarketModal from "./ResolveMarketModal";
 import { Clock } from "lucide-react";
 
 type MarketCardProps = {
@@ -20,6 +21,10 @@ export default function MarketCard({ marketId }: MarketCardProps) {
 
   const openMintDialog = (outcome: Outcome) => {
     NiceModal.show(MintModal, { marketId, outcome, amount: 1, onMint });
+  };
+
+  const openResolutionDialog = () => {
+    NiceModal.show(ResolveMarketModal, { marketId });
   };
 
   const onMint = useCallback(() => {
@@ -45,16 +50,19 @@ export default function MarketCard({ marketId }: MarketCardProps) {
             <Progress color="primary" value={yesPercentage} className="my-2" aria-label="Yes percentage" />
           </div>
           <div className="flex gap-2 mb-4">
-            <Button color="success" className="flex-1" onPress={() => openMintDialog(Outcome.YES)}>
+            <Button color="success" className="flex-1" onPress={() => openMintDialog(Outcome.Yes)}>
               Yes
             </Button>
-            <Button color="danger" className="flex-1" onPress={() => openMintDialog(Outcome.NO)}>
+            <Button color="danger" className="flex-1" onPress={() => openMintDialog(Outcome.No)}>
               No
             </Button>
           </div>
           <div className="flex items-center text-sm text-gray-400">
             <Clock size={16} className="mr-2" />
             {market.expirationDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+          </div>
+          <div>
+            <Button onPress={openResolutionDialog}>Resolve</Button>
           </div>
         </CardBody>
       </Card>

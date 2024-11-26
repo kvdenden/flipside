@@ -10,6 +10,7 @@ import ApprovalButton from "./ApprovalButton";
 import { useQueryClient } from "@tanstack/react-query";
 
 type ActionGuardProps = {
+  isLoading?: boolean;
   token: `0x${string}`;
   amount: bigint;
   spender: `0x${string}`;
@@ -18,7 +19,7 @@ type ActionGuardProps = {
   children: ReactNode;
 };
 
-export default function ActionGuard({ token, amount, spender, buttonProps, children }: ActionGuardProps) {
+export default function ActionGuard({ isLoading, token, amount, spender, buttonProps, children }: ActionGuardProps) {
   const { address = zeroAddress, isConnected } = useAccount();
 
   const queryClient = useQueryClient();
@@ -60,7 +61,7 @@ export default function ActionGuard({ token, amount, spender, buttonProps, child
   const sufficientAllowance = allowance >= amount;
   const sufficientBalance = balance >= amount;
 
-  if (isBalanceLoading || isAllowanceLoading) return <Button variant="ghost" isLoading {...buttonProps} />;
+  if (isLoading || isBalanceLoading || isAllowanceLoading) return <Button variant="ghost" isLoading {...buttonProps} />;
 
   if (!isConnected) return <ConnectButton {...buttonProps} />;
 

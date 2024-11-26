@@ -24,6 +24,7 @@ import useQuote from "@/hooks/useQuote";
 import ActionGuard from "./ActionGuard";
 import MintButton from "./MintButton";
 import useToken from "@/hooks/useToken";
+import TokenAmount from "./TokenAmount";
 
 type MintModalProps = {
   marketId: `0x${string}`;
@@ -67,7 +68,7 @@ function MintModal({
       <ModalContent>
         {(onClose) => (
           <>
-            <ModalHeader className="flex flex-col gap-1">Buy {outcome == Outcome.YES ? "Yes" : "No"}</ModalHeader>
+            <ModalHeader className="flex flex-col gap-1">Buy {outcome == Outcome.Yes ? "Yes" : "No"}</ModalHeader>
             <ModalBody>
               <div className="grid gap-6">
                 <div>
@@ -80,15 +81,18 @@ function MintModal({
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-sm">You pay</span>
                       <span className="font-medium">
-                        {Number(formatUnits(price, collateralToken?.decimals ?? 18))} {collateralToken?.symbol}
+                        <TokenAmount amount={price} address={collateralToken?.address} />
                       </span>
                     </div>
 
                     <div className="flex items-center justify-between">
                       <span className="text-sm">You receive (estimated)</span>
                       <span className="font-medium">
-                        {Number(formatUnits(amountIn + amountOut, 18)).toFixed(2)}{" "}
-                        {outcome == Outcome.YES ? "Yes" : "No"} tokens
+                        <TokenAmount
+                          amount={amountIn + amountOut}
+                          address={outcome === Outcome.Yes ? market?.longToken : market?.shortToken}
+                          options={{ symbol: outcome === Outcome.Yes ? "YES" : "NO", precision: 2 }}
+                        />
                       </span>
                     </div>
                   </Skeleton>

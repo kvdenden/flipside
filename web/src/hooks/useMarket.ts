@@ -4,9 +4,9 @@ import { useQuery } from "@tanstack/react-query";
 import { getAddress, hexToBigInt } from "viem";
 
 export enum Outcome {
-  YES,
-  NO,
-  INVALID,
+  No,
+  Yes,
+  Invalid,
 }
 
 export type Pool = {
