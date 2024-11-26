@@ -14,13 +14,13 @@ const IQuoterV2ABI = parseAbi([
 
 export default function useQuote(
   marketId?: `0x${string}`,
-  outcome: Outcome = Outcome.YES,
+  outcome: Outcome = Outcome.Yes,
   amount: bigint = BigInt(1e18)
 ) {
   const { data: market } = useMarket(marketId);
 
-  const tokenIn = market ? (outcome === Outcome.YES ? market.shortToken : market.longToken) : zeroAddress;
-  const tokenOut = market ? (outcome === Outcome.YES ? market.longToken : market.shortToken) : zeroAddress;
+  const tokenIn = market ? (outcome === Outcome.Yes ? market.shortToken : market.longToken) : zeroAddress;
+  const tokenOut = market ? (outcome === Outcome.Yes ? market.longToken : market.shortToken) : zeroAddress;
 
   const quote = useSimulateContract({
     address: process.env.NEXT_PUBLIC_UNISWAP_QUOTERV2,
