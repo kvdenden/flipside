@@ -38,7 +38,6 @@ contract ResolverTest is Test {
     currency.approve(address(resolver), bond);
 
     uint256 balance = currency.balanceOf(address(this));
-    console.log("Balance: %d", balance);
 
     bytes32 assertionId = resolver.assertOutcome(address(market), Outcome.Yes);
 

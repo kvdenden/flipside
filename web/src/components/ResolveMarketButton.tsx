@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { useAccount, useWriteContract, useWaitForTransactionReceipt, useSimulateContract } from "wagmi";
 
 import { Button, ButtonProps } from "@nextui-org/react";
-import { Outcome } from "@/hooks/useMarket";
+import Outcome from "@/util/outcome";
 import { resolverAbi } from "@/web3/abi";
 
 const RESOLVER_ADDRESS = process.env.NEXT_PUBLIC_RESOLVER_CONTRACT_ADDRESS;
@@ -30,8 +30,6 @@ export default function ResolveMarketButton({
     functionName: "assertOutcome",
     args: [marketId, outcome],
   });
-
-  console.log("sim", sim);
 
   const resolveMarket = useWriteContract();
   const resolveMarketReceipt = useWaitForTransactionReceipt({ hash: resolveMarket.data });

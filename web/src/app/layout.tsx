@@ -19,9 +19,9 @@ export default function RootLayout({
     <html lang="en" className="dark">
       <body className="min-h-screen">
         <Providers>
-          <Header />
-          <div className="container mx-auto">
-            <main className="dark text-foreground bg-background">{children}</main>
+          <div className="flex flex-col min-h-screen">
+            <Header />
+            <main className="flex-1 flex flex-col container mx-auto mb-6">{children}</main>
           </div>
         </Providers>
       </body>

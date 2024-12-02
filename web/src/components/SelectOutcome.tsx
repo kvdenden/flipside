@@ -1,4 +1,4 @@
-import { Outcome } from "@/hooks/useMarket";
+import Outcome from "@/util/outcome";
 import { Select, Selection, SelectItem, SelectProps } from "@nextui-org/react";
 import { Key, useEffect, useState } from "react";
 

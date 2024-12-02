@@ -3,7 +3,8 @@ import { parseAbi, zeroAddress } from "viem";
 import { useSimulateContract } from "wagmi";
 import { FeeAmount } from "@uniswap/v3-sdk";
 
-import useMarket, { Outcome } from "./useMarket";
+import Outcome from "@/util/outcome";
+import useMarket from "./useMarket";
 
 const IQuoterV2ABI = parseAbi([
   "function quoteExactInput(bytes path, uint256 amountIn) external returns (uint256 amountOut, uint160[] sqrtPriceX96AfterList, uint32[] initializedTicksCrossedList, uint256 gasEstimate)",

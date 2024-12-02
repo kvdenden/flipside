@@ -5,7 +5,7 @@ import { zeroAddress } from "viem";
 import { useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 
 import { Button, ButtonProps } from "@nextui-org/react";
-import { Outcome } from "@/hooks/useMarket";
+import Outcome from "@/util/outcome";
 import { flipsideAbi } from "@/web3/abi";
 
 const FLIPSIDE_ADDRESS = process.env.NEXT_PUBLIC_FLIPSIDE_CONTRACT_ADDRESS;

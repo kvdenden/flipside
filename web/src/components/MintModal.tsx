@@ -18,7 +18,8 @@ import {
   Skeleton,
 } from "@nextui-org/react";
 
-import useMarket, { Outcome } from "@/hooks/useMarket";
+import Outcome from "@/util/outcome";
+import useMarket from "@/hooks/useMarket";
 import useQuote from "@/hooks/useQuote";
 
 import ActionGuard from "./ActionGuard";

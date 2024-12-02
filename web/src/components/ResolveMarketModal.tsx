@@ -5,7 +5,7 @@ import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalProps } 
 
 import NiceModal, { useModal } from "@ebay/nice-modal-react";
 
-import { Outcome } from "@/hooks/useMarket";
+import Outcome from "@/util/outcome";
 import ActionGuard from "./ActionGuard";
 import ResolveMarketButton from "./ResolveMarketButton";
 import useBond from "@/hooks/useBond";

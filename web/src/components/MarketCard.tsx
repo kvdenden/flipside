@@ -1,69 +1,87 @@
 "use client";
 
 import { useCallback } from "react";
+import Link from "next/link";
 import NiceModal from "@ebay/nice-modal-react";
-import { Button, Card, CardBody, Progress } from "@nextui-org/react";
+import { Button, Card, CardBody, Skeleton } from "@nextui-org/react";
 
-import useMarket, { Outcome } from "@/hooks/useMarket";
-import usePool from "@/hooks/usePool";
+import useMarket from "@/hooks/useMarket";
 
 import MintModal from "./MintModal";
-import ResolveMarketModal from "./ResolveMarketModal";
+// import ResolveMarketModal from "./ResolveMarketModal";
 import { Clock } from "lucide-react";
+import Outcome from "@/util/outcome";
+import OutcomeLabel from "./OutcomeLabel";
+import useYesPercentage from "@/hooks/useYesPercentage";
 
 type MarketCardProps = {
   marketId: `0x${string}`;
 };
 
-export default function MarketCard({ marketId }: MarketCardProps) {
-  const { data: market } = useMarket(marketId);
-  const { data: pool, refetch: refetchPool } = usePool(marketId);
-
+function MintActions({ marketId, onMint = () => {} }: { marketId: `0x${string}`; onMint?: () => void }) {
   const openMintDialog = (outcome: Outcome) => {
     NiceModal.show(MintModal, { marketId, outcome, amount: 1, onMint });
   };
 
-  const openResolutionDialog = () => {
-    NiceModal.show(ResolveMarketModal, { marketId });
-  };
+  return (
+    <div className="flex gap-2">
+      <Button color="success" className="flex-1" onPress={() => openMintDialog(Outcome.Yes)}>
+        Buy Yes
+      </Button>
+      <Button color="danger" className="flex-1" onPress={() => openMintDialog(Outcome.No)}>
+        Buy No
+      </Button>
+    </div>
+  );
+}
+
+export default function MarketCard({ marketId }: MarketCardProps) {
+  const { data: market } = useMarket(marketId);
+  const { data: yesPercentage, refetch } = useYesPercentage(marketId);
+
+  // const openResolutionDialog = () => {
+  //   NiceModal.show(ResolveMarketModal, { marketId });
+  // };
 
   const onMint = useCallback(() => {
-    refetchPool();
-  }, [refetchPool]);
+    refetch();
+  }, [refetch]);
 
   if (!market) return null;
-
-  const longPrice = pool && (market.longToken == pool.token0.address ? pool.token0Price : pool.token1Price);
-  const yesPercentage = longPrice && parseInt(longPrice.divide(longPrice.add(1)).multiply(100).toFixed(0));
 
   return (
     <>
       <Card>
         <CardBody className="p-4">
-          <div className="flex flex-col mb-2">
-            <h3 className="text-lg font-semibold mb-2">{market.title}</h3>
-            <p className="text-sm text-gray-400">{market.description}</p>
-            <div className="flex items-center justify-between py-3">
-              <span className="text-sm">Yes</span>
-              <span className="text-sm">{yesPercentage}%</span>
+          <div className="flex space-x-4 mb-4">
+            <div className="flex-grow">
+              <h3 className="font-semibold">
+                <Link href={`/markets/${marketId}`}>{market.title}</Link>
+              </h3>
             </div>
-            <Progress color="primary" value={yesPercentage} className="my-2" aria-label="Yes percentage" />
+            <div className="text-center">
+              <Skeleton isLoaded={!!yesPercentage}>
+                <p className="text-xl font-semibold">{yesPercentage}%</p>
+                <p className="text-gray-400 text-sm">chance</p>
+              </Skeleton>
+            </div>
           </div>
-          <div className="flex gap-2 mb-4">
-            <Button color="success" className="flex-1" onPress={() => openMintDialog(Outcome.Yes)}>
-              Yes
-            </Button>
-            <Button color="danger" className="flex-1" onPress={() => openMintDialog(Outcome.No)}>
-              No
-            </Button>
+          <div className="mb-4">
+            {market.resolved ? (
+              <p className="flex items-center gap-2 font-semibold text-xl">
+                Outcome: <OutcomeLabel outcome={market.outcome!} className="uppercase" />
+              </p>
+            ) : (
+              <MintActions marketId={marketId} onMint={onMint} />
+            )}
           </div>
           <div className="flex items-center text-sm text-gray-400">
             <Clock size={16} className="mr-2" />
             {market.expirationDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
           </div>
-          <div>
+          {/* <div>
             <Button onPress={openResolutionDialog}>Resolve</Button>
-          </div>
+          </div> */}
         </CardBody>
       </Card>
     </>
