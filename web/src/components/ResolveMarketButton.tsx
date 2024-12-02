@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { useAccount, useWriteContract, useWaitForTransactionReceipt, useSimulateContract } from "wagmi";
+import { useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 
 import { Button, ButtonProps } from "@nextui-org/react";
 import Outcome from "@/util/outcome";
@@ -23,13 +23,6 @@ export default function ResolveMarketButton({
   ...props
 }: ResolveMarketButtonProps) {
   const { isConnected } = useAccount();
-
-  const sim = useSimulateContract({
-    address: RESOLVER_ADDRESS,
-    abi: RESOLVER_ABI,
-    functionName: "assertOutcome",
-    args: [marketId, outcome],
-  });
 
   const resolveMarket = useWriteContract();
   const resolveMarketReceipt = useWaitForTransactionReceipt({ hash: resolveMarket.data });

@@ -3,7 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { getAddress, hexToBigInt } from "viem";
 
-import Outcome from "@/util/outcome";
+import Outcome, { OutcomeUtils } from "@/util/outcome";
 
 export type Pool = {
   id: `0x${string}`;
@@ -46,7 +46,7 @@ const fetchMarket = async (marketId: `0x${string}`): Promise<Market | undefined>
       },
 
       resolved: market.resolved,
-      outcome: market.outcome && Outcome.fromString(market.outcome),
+      outcome: market.outcome && OutcomeUtils.fromString(market.outcome),
     };
   }
 

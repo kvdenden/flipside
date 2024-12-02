@@ -1,11 +1,11 @@
-enum Outcome {
+export enum Outcome {
   No,
   Yes,
   Invalid,
 }
 
-namespace Outcome {
-  export function fromString(value: string): Outcome {
+export class OutcomeUtils {
+  static fromString(value: string): Outcome {
     switch (value.toLowerCase()) {
       case "no":
         return Outcome.No;
@@ -16,7 +16,7 @@ namespace Outcome {
     }
   }
 
-  export function toString(value: Outcome): string {
+  static toString(value: Outcome): string {
     switch (value) {
       case Outcome.No:
         return "No";

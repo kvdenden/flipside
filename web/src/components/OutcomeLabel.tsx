@@ -1,4 +1,4 @@
-import Outcome from "@/util/outcome";
+import Outcome, { OutcomeUtils } from "@/util/outcome";
 
 function textColor(outcome: Outcome): string {
   switch (outcome) {
@@ -24,5 +24,5 @@ export default function OutcomeLabel({
 }: OutcomeLabelProps) {
   if (outcome === undefined) return null;
 
-  return <Component className={`${textColor(outcome)} ${className}`}>{Outcome.toString(outcome)}</Component>;
+  return <Component className={`${textColor(outcome)} ${className}`}>{OutcomeUtils.toString(outcome)}</Component>;
 }
