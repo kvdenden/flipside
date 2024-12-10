@@ -2,33 +2,35 @@
 
 import { useCallback } from "react";
 import Link from "next/link";
-import NiceModal from "@ebay/nice-modal-react";
 import { Button, Card, CardBody, Skeleton } from "@nextui-org/react";
+import { Clock } from "lucide-react";
 
 import useMarket from "@/hooks/useMarket";
 
-import MintModal from "./MintModal";
-// import ResolveMarketModal from "./ResolveMarketModal";
-import { Clock } from "lucide-react";
 import Outcome from "@/util/outcome";
 import OutcomeLabel from "./OutcomeLabel";
-import useYesPercentage from "@/hooks/useYesPercentage";
+import useOutcomePercentage from "@/hooks/useOutcomePercentage";
+import { openMintModal } from "@/util/modals";
 
 type MarketCardProps = {
   marketId: `0x${string}`;
 };
 
 function MintActions({ marketId, onMint = () => {} }: { marketId: `0x${string}`; onMint?: () => void }) {
-  const openMintDialog = (outcome: Outcome) => {
-    NiceModal.show(MintModal, { marketId, outcome, amount: 1, onMint });
-  };
-
   return (
     <div className="flex gap-2">
-      <Button color="success" className="flex-1" onPress={() => openMintDialog(Outcome.Yes)}>
+      <Button
+        color="success"
+        className="flex-1"
+        onPress={() => openMintModal({ marketId, outcome: Outcome.Yes, amount: 1, onMint })}
+      >
         Buy Yes
       </Button>
-      <Button color="danger" className="flex-1" onPress={() => openMintDialog(Outcome.No)}>
+      <Button
+        color="danger"
+        className="flex-1"
+        onPress={() => openMintModal({ marketId, outcome: Outcome.No, amount: 1, onMint })}
+      >
         Buy No
       </Button>
     </div>
@@ -37,11 +39,7 @@ function MintActions({ marketId, onMint = () => {} }: { marketId: `0x${string}`;
 
 export default function MarketCard({ marketId }: MarketCardProps) {
   const { data: market } = useMarket(marketId);
-  const { data: yesPercentage, refetch } = useYesPercentage(marketId);
-
-  // const openResolutionDialog = () => {
-  //   NiceModal.show(ResolveMarketModal, { marketId });
-  // };
+  const { data: yesPercentage, refetch } = useOutcomePercentage(marketId);
 
   const onMint = useCallback(() => {
     refetch();

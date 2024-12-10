@@ -15,7 +15,7 @@ import TokenAmount from "./TokenAmount";
 
 const RESOLVER_ADDRESS = process.env.NEXT_PUBLIC_RESOLVER_CONTRACT_ADDRESS;
 
-type ResolveMarketModalProps = {
+export type ResolveMarketModalProps = {
   marketId: `0x${string}`;
   onResolve?: () => void;
 };

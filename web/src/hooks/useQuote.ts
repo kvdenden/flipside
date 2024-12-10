@@ -16,7 +16,7 @@ const IQuoterV2ABI = parseAbi([
 export default function useQuote(
   marketId?: `0x${string}`,
   outcome: Outcome = Outcome.Yes,
-  amount: bigint = BigInt(1e18)
+  amountIn: bigint = BigInt(1e18)
 ) {
   const { data: market } = useMarket(marketId);
 
@@ -27,7 +27,7 @@ export default function useQuote(
     address: process.env.NEXT_PUBLIC_UNISWAP_QUOTERV2,
     abi: IQuoterV2ABI,
     functionName: "quoteExactInputSingle",
-    args: [{ tokenIn, tokenOut, fee: FeeAmount.HIGH, amountIn: amount, sqrtPriceLimitX96: BigInt(0) }],
+    args: [{ tokenIn, tokenOut, fee: FeeAmount.HIGH, amountIn, sqrtPriceLimitX96: BigInt(0) }],
     account: process.env.NEXT_PUBLIC_FLIPSIDE_CONTRACT_ADDRESS,
     query: {
       enabled: !!market,

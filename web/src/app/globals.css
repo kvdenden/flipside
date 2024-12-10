@@ -1,3 +1,13 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.hide-spinners::-webkit-inner-spin-button,
+.hide-spinners::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.hide-spinners {
+  -moz-appearance: textfield;
+}

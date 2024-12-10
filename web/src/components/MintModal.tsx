@@ -1,10 +1,6 @@
 "use client";
 
 import React, { useMemo } from "react";
-import { zeroAddress } from "viem";
-import { useAccount, useReadContract } from "wagmi";
-
-import { erc20Abi } from "viem";
 
 import NiceModal, { useModal } from "@ebay/nice-modal-react";
 import {
@@ -20,14 +16,14 @@ import {
 
 import Outcome from "@/util/outcome";
 import useMarket from "@/hooks/useMarket";
+import useToken from "@/hooks/useToken";
 import useQuote from "@/hooks/useQuote";
 
 import ActionGuard from "./ActionGuard";
 import MintButton from "./MintButton";
-import useToken from "@/hooks/useToken";
 import TokenAmount from "./TokenAmount";
 
-type MintModalProps = {
+export type MintModalProps = {
   marketId: `0x${string}`;
   outcome: Outcome;
   amount?: number;
@@ -43,26 +39,13 @@ function MintModal({
   onMint = () => {},
   ...props
 }: Omit<ModalProps, "children"> & MintModalProps) {
-  const { address, isConnected } = useAccount();
-
   const { data: market } = useMarket(marketId);
   const { data: collateralToken } = useToken(market?.collateralToken);
 
   const amountIn = BigInt(amount * 1e18);
   const { data: amountOut = BigInt(0), isLoading: quoteIsLoading } = useQuote(marketId, outcome, amountIn);
 
-  const { data: balance } = useReadContract({
-    address: market?.collateralToken,
-    abi: erc20Abi,
-    functionName: "balanceOf",
-    args: [address ?? zeroAddress],
-    query: {
-      enabled: isConnected && !!market,
-    },
-  });
-
   const price = useMemo(() => (market?.unitPrice ?? BigInt(0)) * BigInt(amount), [market, amount]);
-  const sufficientBalance = useMemo(() => !!balance && balance >= price, [balance, price]);
 
   return (
     <Modal {...props}>
@@ -100,7 +83,7 @@ function MintModal({
                 </div>
               </div>
             </ModalBody>
-            <ModalFooter>
+            <ModalFooter className="flex flex-col justify-center">
               {market && (
                 <ActionGuard
                   token={market.collateralToken}
@@ -112,7 +95,6 @@ function MintModal({
                     marketId={marketId}
                     outcome={outcome}
                     amount={amount}
-                    isDisabled={!sufficientBalance}
                     className="w-full"
                     color="primary"
                     onMint={() => {
@@ -122,6 +104,9 @@ function MintModal({
                   />
                 </ActionGuard>
               )}
+              <p className="text-sm text-gray-400 text-center mt-2">
+                By trading, you agree to the <span className="underline">Terms of Use</span>
+              </p>
             </ModalFooter>
           </>
         )}

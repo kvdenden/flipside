@@ -40,7 +40,7 @@ const FLIPSIDE_ABI = flipsideAbi;
 
 const popularTokens = [USDC, WETH];
 
-type CreateMarketModalProps = {
+export type CreateMarketModalProps = {
   defaultStatement?: string;
   onCreate?: () => void;
 };

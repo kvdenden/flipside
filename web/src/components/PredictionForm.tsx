@@ -1,18 +1,17 @@
 "use client";
 
 import { useState } from "react";
-
-import NiceModal from "@ebay/nice-modal-react";
 import { Button, Card, CardBody, CardHeader, Input } from "@nextui-org/react";
 import { Sparkles } from "lucide-react";
-import CreateMarketModal from "./CreateMarketModal";
+
+import { openCreateMarketModal } from "@/util/modals";
 
 export default function PredictionForm() {
   const [prediction, setPrediction] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    NiceModal.show(CreateMarketModal, { defaultStatement: prediction });
+    openCreateMarketModal({ defaultStatement: prediction });
   };
 
   return (
