@@ -1,21 +1,31 @@
 "use client";
 
 import { useEffect } from "react";
+import { Button, ButtonProps } from "@nextui-org/react";
 
 import { erc20Abi } from "viem";
 import { useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 
-import { Button, ButtonProps } from "@nextui-org/react";
+import { getLoadingText } from "@/util/loading";
 
 type ApprovalButtonProps = Omit<ButtonProps, "children"> & {
+  label?: string;
+  loadingLabel?: string;
   token: `0x${string}`;
   amount: bigint;
   spender: `0x${string}`;
   onApprove?: () => void;
 };
 
-export default function ApprovalButton(props: ApprovalButtonProps) {
-  const { token, amount, spender, onApprove = () => {}, ...buttonProps } = props;
+export default function ApprovalButton({
+  label = "Approve",
+  loadingLabel = getLoadingText(label),
+  token,
+  amount,
+  spender,
+  onApprove = () => {},
+  ...props
+}: ApprovalButtonProps) {
   const { isConnected } = useAccount();
 
   const approve = useWriteContract();
@@ -42,9 +52,9 @@ export default function ApprovalButton(props: ApprovalButtonProps) {
       }}
       isDisabled={isDisabled}
       isLoading={isLoading}
-      {...buttonProps}
+      {...props}
     >
-      {isLoading ? "Approving..." : "Approve"}
+      {isLoading ? loadingLabel : label}
     </Button>
   );
 }

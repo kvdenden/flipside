@@ -7,17 +7,27 @@ import { zeroAddress } from "viem";
 import { useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 
 import { flipsideAbi } from "@/web3/abi";
+import { getLoadingText } from "@/util/loading";
 
 const FLIPSIDE_ADDRESS = process.env.NEXT_PUBLIC_FLIPSIDE_CONTRACT_ADDRESS;
 const FLIPSIDE_ABI = flipsideAbi;
 
 type MintPairButtonProps = Omit<ButtonProps, "children"> & {
+  label?: string;
+  loadingLabel?: string;
   marketId: `0x${string}`;
   amount?: number;
   onMint?: () => void;
 };
 
-export default function MintPairButton({ marketId, amount = 1, onMint = () => {}, ...props }: MintPairButtonProps) {
+export default function MintPairButton({
+  label = "Mint",
+  loadingLabel = getLoadingText(label),
+  marketId,
+  amount = 1,
+  onMint = () => {},
+  ...props
+}: MintPairButtonProps) {
   const { address, isConnected } = useAccount();
 
   const mintPair = useWriteContract();
@@ -46,7 +56,7 @@ export default function MintPairButton({ marketId, amount = 1, onMint = () => {}
       isLoading={isLoading}
       {...props}
     >
-      {isLoading ? "Minting..." : "Mint"}
+      {isLoading ? loadingLabel : label}
     </Button>
   );
 }

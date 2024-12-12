@@ -5,11 +5,11 @@ import { Clock } from "lucide-react";
 
 import { openMintLiquidityModal, openResolutionModal } from "@/util/modals";
 import Outcome from "@/util/outcome";
-import OutcomeLabel from "@/components/OutcomeLabel";
 import MintForm from "@/components/MintForm";
 
 import useMarket from "@/hooks/useMarket";
 import useOutcomePercentage from "@/hooks/useOutcomePercentage";
+import SettleForm from "@/components/SettleForm";
 
 type MarketPageProps = {
   params: {
@@ -46,26 +46,24 @@ export default function MarketPage({ params: { marketId } }: MarketPageProps) {
             <div className="h-64 bg-gray-700 rounded"></div>
           </section>
 
-          <section className="bg-gray-800 rounded-lg p-6">
-            <h2 className="text-lg font-bold mb-4">Market Description</h2>
-            <p className="text-sm text-gray-400 mb-4">{market.description}</p>
-            {market.resolved ? (
-              <p className="flex items-center gap-2 font-semibold text-xl">
-                Outcome: <OutcomeLabel outcome={market.outcome!} className="uppercase" />
-              </p>
-            ) : (
-              <Button onPress={() => openResolutionModal({ marketId })}>Propose resolution</Button>
-            )}
+          <section className="bg-gray-800 rounded-lg p-6 space-y-4">
+            <h2 className="text-lg font-bold">Market Description</h2>
+            <p className="text-sm text-gray-400">{market.description}</p>
+            {!market.resolved && <Button onPress={() => openResolutionModal({ marketId })}>Propose resolution</Button>}
           </section>
         </div>
 
         <aside className="flex flex-col gap-6">
-          <Card>
-            <CardBody>
-              {market.resolved ? (
-                <p className="flex items-center gap-2 font-semibold text-xl">Settle (TODO)</p>
-              ) : (
-                <>
+          {market.resolved ? (
+            <Card>
+              <CardBody>
+                <SettleForm marketId={marketId} />
+              </CardBody>
+            </Card>
+          ) : (
+            <>
+              <Card>
+                <CardBody>
                   <Tabs fullWidth>
                     <Tab key="mint" title="Buy">
                       <div>
@@ -81,20 +79,20 @@ export default function MarketPage({ params: { marketId } }: MarketPageProps) {
                   <p className="text-sm text-gray-400 text-center mt-2">
                     By trading, you agree to the <span className="underline">Terms of Use</span>
                   </p>
-                </>
-              )}
-            </CardBody>
-          </Card>
-          <div className="flex">
-            <Button
-              color="default"
-              variant="ghost"
-              className="flex-1"
-              onPress={() => openMintLiquidityModal({ marketId })}
-            >
-              Provide Liquidity
-            </Button>
-          </div>
+                </CardBody>
+              </Card>
+              <div className="flex">
+                <Button
+                  color="default"
+                  variant="ghost"
+                  className="flex-1"
+                  onPress={() => openMintLiquidityModal({ marketId })}
+                >
+                  Provide Liquidity
+                </Button>
+              </div>
+            </>
+          )}
         </aside>
       </div>
     </div>

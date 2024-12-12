@@ -1,22 +1,29 @@
 "use client";
 
 import { useEffect } from "react";
+import { Button, ButtonProps } from "@nextui-org/react";
+
 import { useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 
-import { Button, ButtonProps } from "@nextui-org/react";
-import Outcome from "@/util/outcome";
 import { resolverAbi } from "@/web3/abi";
+
+import Outcome from "@/util/outcome";
+import { getLoadingText } from "@/util/loading";
 
 const RESOLVER_ADDRESS = process.env.NEXT_PUBLIC_RESOLVER_CONTRACT_ADDRESS;
 const RESOLVER_ABI = resolverAbi;
 
 type ResolveMarketButtonProps = Omit<ButtonProps, "children"> & {
+  label?: string;
+  loadingLabel?: string;
   marketId: `0x${string}`;
   outcome: Outcome;
   onResolve?: () => void;
 };
 
 export default function ResolveMarketButton({
+  label = "Resolve",
+  loadingLabel = getLoadingText(label),
   marketId,
   outcome,
   onResolve = () => {},
@@ -50,7 +57,7 @@ export default function ResolveMarketButton({
       isLoading={isLoading}
       {...props}
     >
-      {isLoading ? "Submitting..." : "Submit"}
+      {isLoading ? loadingLabel : label}
     </Button>
   );
 }

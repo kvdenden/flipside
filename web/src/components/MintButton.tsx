@@ -1,24 +1,37 @@
 "use client";
 
 import { useEffect } from "react";
+import { Button, ButtonProps } from "@nextui-org/react";
+
 import { zeroAddress } from "viem";
 import { useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 
-import { Button, ButtonProps } from "@nextui-org/react";
-import Outcome from "@/util/outcome";
 import { flipsideAbi } from "@/web3/abi";
+
+import Outcome from "@/util/outcome";
+import { getLoadingText } from "@/util/loading";
 
 const FLIPSIDE_ADDRESS = process.env.NEXT_PUBLIC_FLIPSIDE_CONTRACT_ADDRESS;
 const FLIPSIDE_ABI = flipsideAbi;
 
 type MintButtonProps = Omit<ButtonProps, "children"> & {
+  label?: string;
+  loadingLabel?: string;
   marketId: `0x${string}`;
   outcome: Outcome;
   amount?: number;
   onMint?: () => void;
 };
 
-export default function MintButton({ marketId, outcome, amount = 1, onMint = () => {}, ...props }: MintButtonProps) {
+export default function MintButton({
+  label = "Mint",
+  loadingLabel = getLoadingText(label),
+  marketId,
+  outcome,
+  amount = 1,
+  onMint = () => {},
+  ...props
+}: MintButtonProps) {
   const { address, isConnected } = useAccount();
 
   const mintOutcome = useWriteContract();
@@ -47,7 +60,7 @@ export default function MintButton({ marketId, outcome, amount = 1, onMint = () 
       isLoading={isLoading}
       {...props}
     >
-      {isLoading ? "Minting..." : "Mint"}
+      {isLoading ? loadingLabel : label}
     </Button>
   );
 }
