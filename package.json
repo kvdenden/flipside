@@ -1,0 +1,9 @@
+{
+  "name": "flipside",
+  "scripts": {
+    "postinstall": "husky"
+  },
+  "devDependencies": {
+    "husky": "^9.1.7"
+  }
+}
