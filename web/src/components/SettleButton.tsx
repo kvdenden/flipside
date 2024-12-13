@@ -3,7 +3,8 @@
 import { useEffect } from "react";
 import { Button, ButtonProps } from "@nextui-org/react";
 
-import { useWriteContract, useWaitForTransactionReceipt } from "wagmi";
+import { zeroAddress } from "viem";
+import { useWriteContract, useWaitForTransactionReceipt, useAccount } from "wagmi";
 
 import { marketAbi } from "@/web3/abi";
 
@@ -30,6 +31,8 @@ export default function SettleButton({
   onSettle = () => {},
   ...props
 }: SettleButtonProps) {
+  const { address, isConnected } = useAccount();
+
   const { data: market } = useMarket(marketId);
 
   const settleOutcome = useWriteContract();
@@ -41,7 +44,7 @@ export default function SettleButton({
     }
   }, [onSettle, settleOutcomeReceipt]);
 
-  const isDisabled = !market?.resolved;
+  const isDisabled = !isConnected || !market?.resolved;
   const isLoading = settleOutcome.isPending || settleOutcomeReceipt.isLoading;
 
   return (
@@ -51,7 +54,7 @@ export default function SettleButton({
           address: marketId,
           abi: MARKET_ABI,
           functionName: "settle",
-          args: [marketId, longAmount, shortAmount],
+          args: [address ?? zeroAddress, longAmount, shortAmount],
         });
       }}
       isDisabled={isDisabled}

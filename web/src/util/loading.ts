@@ -1,28 +1,9 @@
 export function getLoadingText(verb: string): string {
   // Words where the final consonant is not doubled
-  const NEVER_DOUBLE = new Set([
-    "visit",
-    "edit",
-    "credit",
-    "deposit",
-    "export",
-    "import",
-    "open",
-    "cancel",
-    "register",
-    "filter",
-    "order",
-  ]);
+  const NEVER_DOUBLE = new Set(["edit", "deposit", "open", "cancel", "register", "filter", "order"]);
 
-  // Utility: Check if the word ends in a vowel + consonant
-  const endsInVowelConsonant = (word: string): boolean => {
-    const len = word.length;
-    return (
-      len >= 2 &&
-      /[aeiou]/i.test(word[len - 2]) && // Second-to-last character is a vowel
-      /[^aeiouwxy]/i.test(word[len - 1]) // Last character is a consonant (not w, x, y)
-    );
-  };
+  // Utility: Check if the word ends in a consonant + vowel + consonant (CVC)
+  const endsInCVC = (word: string): boolean => /^[^aeiou][aeiou][^aeiouwxy]$/i.test(word.slice(-3)); // Last 3 letters match CVC
 
   // Handle words ending with "e"
   if (verb.endsWith("e")) {
@@ -30,7 +11,7 @@ export function getLoadingText(verb: string): string {
   }
 
   // Handle words requiring double consonants
-  if (endsInVowelConsonant(verb) && !NEVER_DOUBLE.has(verb.toLowerCase())) {
+  if (endsInCVC(verb) && !NEVER_DOUBLE.has(verb.toLowerCase())) {
     return `${verb}${verb.at(-1)}ing...`;
   }
 
