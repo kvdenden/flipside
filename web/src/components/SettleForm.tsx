@@ -5,6 +5,7 @@ import useTokenBalance from "@/hooks/useTokenBalance";
 import OutcomeLabel from "./OutcomeLabel";
 import { Button } from "@nextui-org/react";
 import TokenAmount from "./TokenAmount";
+import { CircleAlert } from "lucide-react";
 
 export default function SettleForm({ marketId }: { marketId: `0x${string}` }) {
   const { data: market } = useMarket(marketId);
@@ -12,6 +13,14 @@ export default function SettleForm({ marketId }: { marketId: `0x${string}` }) {
   const { data: shortAmount } = useTokenBalance(market?.shortToken);
 
   if (!market) return null;
+
+  if (!market.resolved)
+    return (
+      <p className="flex items-center gap-2 font-semibold text-lg">
+        <CircleAlert />
+        Market not resolved yet
+      </p>
+    );
 
   const outcome = market.outcome!;
 

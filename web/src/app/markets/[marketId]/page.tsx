@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, Card, CardBody, Tab, Tabs, Spinner } from "@nextui-org/react";
+import { Button, Card, CardBody, Tab, Tabs, Spinner, Skeleton } from "@nextui-org/react";
 import { Clock } from "lucide-react";
 
 import { openMintLiquidityModal, openResolutionModal } from "@/util/modals";
@@ -40,16 +40,28 @@ export default function MarketPage({ params: { marketId } }: MarketPageProps) {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 p-4">
         <div className="flex flex-col gap-6 lg:col-span-2">
-          <section className="bg-gray-800 rounded-lg p-6">
-            <p className="text-4xl font-bold mb-4">{yesPercentage}% chance</p>
-            {/* Placeholder for Graph */}
-            <div className="h-64 bg-gray-700 rounded"></div>
+          <section>
+            <Card>
+              <CardBody>
+                <p className="text-4xl font-bold mb-4">{yesPercentage}% chance</p>
+                {/* Placeholder for Graph */}
+                <Skeleton disableAnimation className="h-64 rounded" />
+              </CardBody>
+            </Card>
           </section>
 
-          <section className="bg-gray-800 rounded-lg p-6 space-y-4">
-            <h2 className="text-lg font-bold">Market Description</h2>
-            <p className="text-sm text-gray-400">{market.description}</p>
-            {!market.resolved && <Button onPress={() => openResolutionModal({ marketId })}>Propose resolution</Button>}
+          <section>
+            <Card>
+              <CardBody>
+                <div className="space-y-4">
+                  <h2 className="text-lg font-bold">Market Description</h2>
+                  <p className="text-sm text-gray-400">{market.description}</p>
+                  {!market.resolved && (
+                    <Button onPress={() => openResolutionModal({ marketId })}>Propose resolution</Button>
+                  )}
+                </div>
+              </CardBody>
+            </Card>
           </section>
         </div>
 
