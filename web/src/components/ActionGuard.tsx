@@ -1,54 +1,46 @@
 import { useCallback, type ReactNode } from "react";
-
-import { erc20Abi, zeroAddress } from "viem";
-import { useAccount, useReadContract } from "wagmi";
-
 import { Button, type ButtonProps } from "@nextui-org/react";
+import { useQueryClient } from "@tanstack/react-query";
+
+import { useAccount } from "wagmi";
 
 import ConnectButton from "./ConnectButton";
 import ApprovalButton from "./ApprovalButton";
-import { useQueryClient } from "@tanstack/react-query";
+import useTokenBalance from "@/hooks/useTokenBalance";
+import useTokenAllowance from "@/hooks/useTokenAllowance";
 
 type ActionGuardProps = {
   isLoading?: boolean;
-  token: `0x${string}`;
-  amount: bigint;
-  spender: `0x${string}`;
+  token?: `0x${string}`;
+  amount?: bigint;
+  spender?: `0x${string}`;
   approveMax?: boolean;
   buttonProps?: ButtonProps;
   children: ReactNode;
 };
 
-export default function ActionGuard({ isLoading, token, amount, spender, buttonProps, children }: ActionGuardProps) {
-  const { address = zeroAddress, isConnected } = useAccount();
+const FLIPSIDE_ADDRESS = process.env.NEXT_PUBLIC_FLIPSIDE_CONTRACT_ADDRESS;
+
+export default function ActionGuard({
+  isLoading,
+  token,
+  amount = BigInt(0),
+  spender = FLIPSIDE_ADDRESS,
+  buttonProps,
+  children,
+}: ActionGuardProps) {
+  const { isConnected } = useAccount();
 
   const queryClient = useQueryClient();
 
-  const { isLoading: isBalanceLoading, data: balance = BigInt(0) } = useReadContract({
-    address: token,
-    abi: erc20Abi,
-    functionName: "balanceOf",
-    args: [address],
-    query: {
-      enabled: isConnected,
-      refetchInterval: 10000,
-    },
-  });
+  const { isLoading: isBalanceLoading, data: balance = BigInt(0) } = useTokenBalance(token);
 
   const {
     isLoading: isAllowanceLoading,
     data: allowance = BigInt(0),
     refetch: refetchAllowance,
     queryKey,
-  } = useReadContract({
-    address: token,
-    abi: erc20Abi,
-    functionName: "allowance",
-    args: [address, spender],
-    query: {
-      enabled: isConnected,
-    },
-  });
+  } = useTokenAllowance(spender, token);
 
   const onApprove = useCallback(
     (amount: bigint) => {
@@ -65,7 +57,7 @@ export default function ActionGuard({ isLoading, token, amount, spender, buttonP
 
   if (!isConnected) return <ConnectButton {...buttonProps} />;
 
-  if (!sufficientAllowance)
+  if (token && !sufficientAllowance)
     return (
       <ApprovalButton
         token={token}
