@@ -1,8 +1,12 @@
 
 -include .env
 
+.PHONY: test
+
 # Clean the repo
-clean  :; forge clean
+clean :; forge clean
+
+test :; forge test --fork-url ${FORK_URL} --fork-block-number ${FORK_BLOCK_NUMBER}
 
 anvil :; anvil --fork-url ${FORK_URL} --fork-block-number ${FORK_BLOCK_NUMBER} --chain-id 31337 --block-time 2 --auto-impersonate
 
