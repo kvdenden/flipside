@@ -112,8 +112,7 @@ contract Market is IMarket {
     longToken.burn(msg.sender, longAmount);
     shortToken.burn(msg.sender, shortAmount);
 
-    Outcome outcome_ = outcome();
-    amount = _settlementAmount(outcome_, longAmount, shortAmount);
+    amount = settlementAmount(outcome(), longAmount, shortAmount);
 
     _payout(to, amount);
 
@@ -122,6 +121,10 @@ contract Market is IMarket {
 
   function price(uint256 amount) public view returns (uint256) {
     return Price.calculate(amount, unitPrice);
+  }
+
+  function redemptionPrice(uint256 amount) public view returns (uint256) {
+    return price(amount) - marketReward(amount);
   }
 
   function marketReward(uint256 amount) public view returns (uint256) {
@@ -140,16 +143,16 @@ contract Market is IMarket {
     return _resolver.outcome(address(this));
   }
 
-  function _payout(address to, uint256 amount) private {
-    uint256 payoutAmount = price(amount) - marketReward(amount);
-
-    collateralToken.safeTransfer(to, payoutAmount);
-  }
-
-  function _settlementAmount(Outcome outcome_, uint256 longAmount, uint256 shortAmount) private pure returns (uint256) {
+  function settlementAmount(Outcome outcome_, uint256 longAmount, uint256 shortAmount) public pure returns (uint256) {
     if (outcome_ == Outcome.Yes) return longAmount;
     if (outcome_ == Outcome.No) return shortAmount;
 
     return (longAmount + shortAmount) / 2;
+  }
+
+  function _payout(address to, uint256 amount) private {
+    uint256 payoutAmount = redemptionPrice(amount);
+
+    collateralToken.safeTransfer(to, payoutAmount);
   }
 }

@@ -45,8 +45,9 @@ contract Flipside {
 
     (IERC20 tokenIn, IERC20 tokenOut) = outcome ? (shortToken, longToken) : (longToken, shortToken);
     uint256 amountOut = _swapExactIn(tokenIn, tokenOut, amount, amountOutMin);
+    uint256 totalAmount = amount + amountOut;
 
-    tokenOut.safeTransfer(to, amount + amountOut);
+    tokenOut.safeTransfer(to, totalAmount);
   }
 
   function redeemOutcome(IMarket market, address to, uint256 amount, uint256 amountInMax, bool outcome) external {

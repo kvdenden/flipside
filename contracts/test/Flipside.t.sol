@@ -16,6 +16,7 @@ import { MarketFactory } from "../src/MarketFactory.sol";
 import { Flipside } from "../src/Flipside.sol";
 
 contract FlipsideTest is Test {
+  address treasury;
   MockERC20 collateralToken;
 
   Flipside flipside;
@@ -27,10 +28,11 @@ contract FlipsideTest is Test {
     address positionManager = vm.envAddress("UNISWAP_V3POSITION_MANAGER");
     address swapRouter = vm.envAddress("UNISWAP_SWAPROUTER");
 
+    treasury = vm.addr(0x42);
     collateralToken = new MockERC20();
 
     Resolver resolver = new Resolver(oo, usdc, 250 * 1e6);
-    RewardManager rewardManager = new RewardManager(address(this), 5_000);
+    RewardManager rewardManager = new RewardManager(treasury, 5_000);
     PoolManager poolManager = new PoolManager(factory, positionManager);
     MarketFactory marketFactory = new MarketFactory(address(resolver), address(rewardManager), address(poolManager));
 
@@ -43,9 +45,7 @@ contract FlipsideTest is Test {
     Market market = _createMarket(initialLiquidity);
 
     assertEq(market.totalVolume(), initialLiquidity);
-    assertEq(
-      collateralToken.balanceOf(address(market)), market.price(initialLiquidity) - market.marketReward(initialLiquidity)
-    );
+    assertEq(collateralToken.balanceOf(address(market)), market.redemptionPrice(initialLiquidity));
   }
 
   function test_mintPair() public {
@@ -55,13 +55,11 @@ contract FlipsideTest is Test {
     uint256 amount = 1e18;
     collateralToken.mint(address(this), market.price(amount));
 
+    uint256 initialMarketCollateral = collateralToken.balanceOf(address(market));
     flipside.mintPair(market, address(this), amount);
 
     assertEq(market.totalVolume(), initialLiquidity + amount);
-    assertEq(
-      collateralToken.balanceOf(address(market)),
-      market.price(initialLiquidity + amount) - market.marketReward(initialLiquidity + amount)
-    );
+    assertEq(collateralToken.balanceOf(address(market)), initialMarketCollateral + market.redemptionPrice(amount));
 
     assertEq(market.longToken().balanceOf(address(this)), amount);
     assertEq(market.shortToken().balanceOf(address(this)), amount);
@@ -74,15 +72,39 @@ contract FlipsideTest is Test {
     uint256 amount = 1e18;
     collateralToken.mint(address(this), market.price(amount));
 
+    uint256 initialMarketCollateral = collateralToken.balanceOf(address(market));
     flipside.mintOutcome(market, address(this), amount, 0, true);
 
     assertEq(market.totalVolume(), initialLiquidity + amount);
-    assertEq(
-      collateralToken.balanceOf(address(market)),
-      market.price(initialLiquidity + amount) - market.marketReward(initialLiquidity + amount)
-    );
+    assertEq(collateralToken.balanceOf(address(market)), initialMarketCollateral + market.redemptionPrice(amount));
 
     assertGt(market.longToken().balanceOf(address(this)), amount);
+    assertEq(market.shortToken().balanceOf(address(this)), 0);
+  }
+
+  function test_redeemOutcome() public {
+    uint256 initialLiquidity = 10 * 1e18;
+    Market market = _createMarket(initialLiquidity);
+
+    uint256 amount = 1e18;
+    collateralToken.mint(address(this), market.price(amount));
+
+    flipside.mintOutcome(market, address(this), amount, 0, true);
+
+    uint256 longAmount = market.longToken().balanceOf(address(this));
+
+    uint256 redeemAmount = 0.99 * 1e18; // TODO: estimate optimal amount to redeem
+
+    market.longToken().approve(address(flipside), longAmount);
+
+    uint256 initialMarketCollateral = collateralToken.balanceOf(address(market));
+    flipside.redeemOutcome(market, address(this), redeemAmount, longAmount - redeemAmount, true);
+
+    assertEq(collateralToken.balanceOf(address(market)), initialMarketCollateral - market.redemptionPrice(redeemAmount));
+    assertEq(collateralToken.balanceOf(address(this)), market.redemptionPrice(redeemAmount));
+
+    // remaining long tokens refunded
+    assertGt(market.longToken().balanceOf(address(this)), 0);
     assertEq(market.shortToken().balanceOf(address(this)), 0);
   }
 
