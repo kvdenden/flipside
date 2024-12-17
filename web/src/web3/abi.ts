@@ -74,6 +74,19 @@ export const flipsideAbi = [
   },
   {
     type: 'function',
+    inputs: [
+      { name: 'market', internalType: 'contract IMarket', type: 'address' },
+      { name: 'to', internalType: 'address', type: 'address' },
+      { name: 'amount', internalType: 'uint256', type: 'uint256' },
+      { name: 'amountInMax', internalType: 'uint256', type: 'uint256' },
+      { name: 'outcome', internalType: 'bool', type: 'bool' },
+    ],
+    name: 'redeemOutcome',
+    outputs: [],
+    stateMutability: 'nonpayable',
+  },
+  {
+    type: 'function',
     inputs: [],
     name: 'swapRouter',
     outputs: [
@@ -81,7 +94,23 @@ export const flipsideAbi = [
     ],
     stateMutability: 'view',
   },
+  {
+    type: 'error',
+    inputs: [{ name: 'target', internalType: 'address', type: 'address' }],
+    name: 'AddressEmptyCode',
+  },
+  {
+    type: 'error',
+    inputs: [{ name: 'account', internalType: 'address', type: 'address' }],
+    name: 'AddressInsufficientBalance',
+  },
+  { type: 'error', inputs: [], name: 'FailedInnerCall' },
   { type: 'error', inputs: [], name: 'MathOverflowedMulDiv' },
+  {
+    type: 'error',
+    inputs: [{ name: 'token', internalType: 'address', type: 'address' }],
+    name: 'SafeERC20FailedOperation',
+  },
 ] as const
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -192,6 +221,13 @@ export const marketAbi = [
   },
   {
     type: 'function',
+    inputs: [{ name: 'amount', internalType: 'uint256', type: 'uint256' }],
+    name: 'redemptionPrice',
+    outputs: [{ name: '', internalType: 'uint256', type: 'uint256' }],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
     inputs: [],
     name: 'resolved',
     outputs: [{ name: '', internalType: 'bool', type: 'bool' }],
@@ -214,6 +250,17 @@ export const marketAbi = [
     name: 'settle',
     outputs: [{ name: 'amount', internalType: 'uint256', type: 'uint256' }],
     stateMutability: 'nonpayable',
+  },
+  {
+    type: 'function',
+    inputs: [
+      { name: 'outcome_', internalType: 'enum Outcome', type: 'uint8' },
+      { name: 'longAmount', internalType: 'uint256', type: 'uint256' },
+      { name: 'shortAmount', internalType: 'uint256', type: 'uint256' },
+    ],
+    name: 'settlementAmount',
+    outputs: [{ name: '', internalType: 'uint256', type: 'uint256' }],
+    stateMutability: 'pure',
   },
   {
     type: 'function',
