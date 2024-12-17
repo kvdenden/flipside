@@ -34,6 +34,8 @@ const SYSTEM_PROMPT = `
 
   **Pair Symbol**: A short, memorable symbol prefix for the token pair (e.g., "TRUMP").
 
+  Current Date: ${new Date().toLocaleString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
+
   Example Input: "Donald Trump will become the next president."
 
   Example Output:
