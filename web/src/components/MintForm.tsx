@@ -8,7 +8,6 @@ import Outcome from "@/util/outcome";
 import TokenAmount from "@/components/TokenAmount";
 
 import useMarket from "@/hooks/useMarket";
-import useToken from "@/hooks/useToken";
 import useOutcomePercentage from "@/hooks/useOutcomePercentage";
 import useQuote from "@/hooks/useQuote";
 
@@ -17,7 +16,6 @@ export default function MintForm({ marketId }: { marketId: `0x${string}` }) {
   const [amount, setAmount] = useState(1);
 
   const { data: market } = useMarket(marketId);
-  const { data: collateralToken } = useToken(market?.collateralToken);
 
   const { data: yesPercentage } = useOutcomePercentage(marketId, Outcome.Yes);
   const { data: noPercentage } = useOutcomePercentage(marketId, Outcome.No);
@@ -33,7 +31,7 @@ export default function MintForm({ marketId }: { marketId: `0x${string}` }) {
 
   const price = useMemo(() => (market?.unitPrice ?? BigInt(0)) * BigInt(amount), [market, amount]);
 
-  if (!market || !collateralToken) return null;
+  if (!market) return null;
 
   return (
     <div className="flex flex-col gap-4">
@@ -93,7 +91,7 @@ export default function MintForm({ marketId }: { marketId: `0x${string}` }) {
         <div className="flex items-center justify-between">
           <div className="text-gray-400">You pay</div>
           <div>
-            <TokenAmount amount={price} address={collateralToken?.address} />
+            <TokenAmount amount={price} address={market.collateralToken} />
           </div>
         </div>
         <div className="flex items-center justify-between">

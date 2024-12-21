@@ -10,6 +10,7 @@ import MintForm from "@/components/MintForm";
 import useMarket from "@/hooks/useMarket";
 import useOutcomePercentage from "@/hooks/useOutcomePercentage";
 import SettleForm from "@/components/SettleForm";
+import RedeemForm from "@/components/RedeemForm";
 
 type MarketPageProps = {
   params: {
@@ -84,7 +85,7 @@ export default function MarketPage({ params: { marketId } }: MarketPageProps) {
                     </Tab>
                     <Tab key="redeem" title="Sell">
                       <div>
-                        <p className="font-semibold mb-2">Outcome</p>
+                        <RedeemForm marketId={marketId} />
                       </div>
                     </Tab>
                   </Tabs>

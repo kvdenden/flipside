@@ -7,11 +7,14 @@ import TokenAmount from "./TokenAmount";
 import { CircleAlert } from "lucide-react";
 import ActionGuard from "./ActionGuard";
 import SettleButton from "./SettleButton";
+import useSettlementPrice from "@/hooks/useSettlementPrice";
 
 export default function SettleForm({ marketId }: { marketId: `0x${string}` }) {
   const { data: market } = useMarket(marketId);
   const { data: longAmount = BigInt(0), isLoading: longBalanceIsLoading } = useTokenBalance(market?.longToken);
   const { data: shortAmount = BigInt(0), isLoading: shortBalanceIsLoading } = useTokenBalance(market?.shortToken);
+
+  const { data: settlementPrice = BigInt(0) } = useSettlementPrice(marketId, longAmount, shortAmount);
 
   if (!market) return null;
 
@@ -45,12 +48,10 @@ export default function SettleForm({ marketId }: { marketId: `0x${string}` }) {
           </div>
         </div>
       </div>
-      {/* <div className="flex justify-between">
+      <div className="flex justify-between">
         <div className="text-gray-400">You receive</div>
-        <div>
-          <TokenAmount amount={BigInt(100 * 1e6)} address={market.collateralToken} options={{ precision: 2 }} />
-        </div>
-      </div> */}
+        <TokenAmount amount={settlementPrice} address={market.collateralToken} options={{ precision: 2 }} />
+      </div>
       <ActionGuard isLoading={isLoading} buttonProps={{ className: "w-full" }}>
         <SettleButton
           marketId={marketId}

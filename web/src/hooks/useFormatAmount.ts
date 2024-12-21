@@ -1,4 +1,5 @@
-import { formatUnits } from "viem";
+import { formatValue } from "@/util/numbers";
+
 import useToken from "./useToken";
 
 export type FormatAmountOptions = {
@@ -13,8 +14,5 @@ export default function useFormatAmount(amount: bigint, address?: `0x${string}`,
 
   const { symbol, precision } = options || {};
 
-  const formattedValue = formatUnits(amount, token.decimals);
-  const formattedWithPrecision = precision ? Number(formattedValue).toFixed(precision) : formattedValue;
-
-  return `${formattedWithPrecision} ${symbol || token.symbol}`;
+  return `${formatValue(amount, token.decimals, { precision })} ${symbol || token.symbol}`;
 }

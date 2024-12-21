@@ -12,7 +12,7 @@
   "dependencies": {
     "@ebay/nice-modal-react": "^1.2.13",
     "@internationalized/date": "3.5.5",
-    "@nextui-org/react": "^2.4.8",
+    "@nextui-org/react": "^2.6.8",
     "@rainbow-me/rainbowkit": "^2.1.7",
     "@tanstack/react-query": "^5.56.2",
     "@uniswap/sdk-core": "^5.8.1",
