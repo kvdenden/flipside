@@ -9,6 +9,7 @@ import { formatValue } from "@/util/numbers";
 import useMarket from "@/hooks/useMarket";
 import useTokenBalance from "@/hooks/useTokenBalance";
 import TokenAmountInput from "./TokenAmountInput";
+import useRedeemAmount from "@/hooks/useRedeemAmount";
 
 export default function RedeemForm({ marketId }: { marketId: `0x${string}` }) {
   const [outcome, setOutcome] = useState(Outcome.Yes);
@@ -17,6 +18,8 @@ export default function RedeemForm({ marketId }: { marketId: `0x${string}` }) {
   const { data: market } = useMarket(marketId);
   const { data: longAmount = BigInt(0) } = useTokenBalance(market?.longToken);
   const { data: shortAmount = BigInt(0) } = useTokenBalance(market?.shortToken);
+
+  const { data: redeemAmount = BigInt(0) } = useRedeemAmount(marketId, outcome, amount);
 
   const maxAmount = outcome === Outcome.Yes ? longAmount : shortAmount;
 
@@ -69,6 +72,12 @@ export default function RedeemForm({ marketId }: { marketId: `0x${string}` }) {
           value={amount}
           onValueChange={setAmount}
         />
+      </div>
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <div className="text-gray-400">Redeem amount</div>
+          <div>{formatValue(redeemAmount)}</div>
+        </div>
       </div>
     </div>
   );
