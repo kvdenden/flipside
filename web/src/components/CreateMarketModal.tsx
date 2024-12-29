@@ -220,7 +220,7 @@ function CreateMarketModal({
                       onChange={(value) => {
                         setMarketData((prevState) => ({
                           ...prevState,
-                          expirationDate: value,
+                          expirationDate: value ?? prevState.expirationDate,
                         }));
                       }}
                       minValue={now(getLocalTimeZone()).add({ hours: 1 })}
