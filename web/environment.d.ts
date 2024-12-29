@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+
 namespace NodeJS {
   interface ProcessEnv {
     NEXT_PUBLIC_CHAIN?: "mainnet" | "testnet";
@@ -11,6 +13,7 @@ namespace NodeJS {
     NEXT_PUBLIC_WETH: `0x${string}`;
 
     NEXT_PUBLIC_UNISWAP_QUOTERV2: `0x${string}`;
+    NEXT_PUBLIC_UNISWAP_V3FACTORY: `0x${string}`;
 
     NEXT_PUBLIC_FLIPSIDE_CONTRACT_ADDRESS: `0x${string}`;
     NEXT_PUBLIC_RESOLVER_CONTRACT_ADDRESS: `0x${string}`;

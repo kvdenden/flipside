@@ -9,7 +9,6 @@ import { useReadContracts } from "wagmi";
 
 import { chain } from "@/web3/config";
 import useMarket from "@/hooks/useMarket";
-import useToken from "@/hooks/useToken";
 
 const chainId = chain.id;
 
@@ -26,9 +25,6 @@ export default function usePool(marketId?: `0x${string}`) {
 
     return market.pool.id;
   }, [market]);
-
-  const { data: longToken } = useToken(market?.longToken);
-  const { data: shortToken } = useToken(market?.shortToken);
 
   const result = useReadContracts({
     allowFailure: false,
@@ -50,16 +46,16 @@ export default function usePool(marketId?: `0x${string}`) {
   });
 
   const pool = useMemo(() => {
-    if (!longToken || !shortToken || !result.data) return;
+    if (!market || !result.data) return;
 
-    const tokenA = new Token(chainId, longToken.address, longToken.decimals);
-    const tokenB = new Token(chainId, shortToken.address, shortToken.decimals);
+    const tokenA = new Token(chainId, market.longToken, 18);
+    const tokenB = new Token(chainId, market.shortToken, 18);
 
     const [slot0, liquidity] = result.data;
     const [sqrtPriceX96, tick] = slot0;
 
     return new Pool(tokenA, tokenB, FeeAmount.HIGH, sqrtPriceX96.toString(), liquidity.toString(), tick);
-  }, [longToken, shortToken, result.data]);
+  }, [market, result.data]);
 
   return { ...result, data: pool };
 }
