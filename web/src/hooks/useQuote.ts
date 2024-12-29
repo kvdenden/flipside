@@ -1,17 +1,11 @@
 import { useMemo } from "react";
-import { parseAbi, zeroAddress } from "viem";
+import { zeroAddress } from "viem";
 import { useSimulateContract } from "wagmi";
 import { FeeAmount } from "@uniswap/v3-sdk";
 
+import { IQuoterV2ABI } from "@/util/uniswap";
 import Outcome from "@/util/outcome";
 import useMarket from "./useMarket";
-
-const IQuoterV2ABI = parseAbi([
-  "function quoteExactInput(bytes path, uint256 amountIn) external returns (uint256 amountOut, uint160[] sqrtPriceX96AfterList, uint32[] initializedTicksCrossedList, uint256 gasEstimate)",
-  "function quoteExactInputSingle((address tokenIn, address tokenOut, uint256 amountIn, uint24 fee, uint160 sqrtPriceLimitX96) params) external returns (uint256 amountOut, uint160 sqrtPriceX96After, uint32 initializedTicksCrossed, uint256 gasEstimate)",
-  "function quoteExactOutput(bytes path, uint256 amountOut) external returns (uint256 amountIn, uint160[] sqrtPriceX96AfterList, uint32[] initializedTicksCrossedList, uint256 gasEstimate)",
-  "function quoteExactOutputSingle((address tokenIn, address tokenOut, uint256 amount, uint24 fee, uint160 sqrtPriceLimitX96) params) external returns (uint256 amountIn, uint160 sqrtPriceX96After, uint32 initializedTicksCrossed, uint256 gasEstimate)",
-]);
 
 export default function useQuote(
   marketId?: `0x${string}`,
