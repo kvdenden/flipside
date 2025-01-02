@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { Button, ButtonProps } from "@nextui-org/react";
 
 import { zeroAddress } from "viem";
-import { useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
+import { useWriteContract, useWaitForTransactionReceipt, useAccount } from "wagmi";
 
 import { flipsideAbi } from "@/web3/abi";
 
@@ -14,48 +14,48 @@ import { getLoadingText } from "@/util/loading";
 const FLIPSIDE_ADDRESS = process.env.NEXT_PUBLIC_FLIPSIDE_CONTRACT_ADDRESS;
 const FLIPSIDE_ABI = flipsideAbi;
 
-type MintButtonProps = Omit<ButtonProps, "children"> & {
+type RedeemButtonProps = Omit<ButtonProps, "children"> & {
   label?: string;
   loadingLabel?: string;
   marketId: `0x${string}`;
   outcome: Outcome;
-  amount?: number;
-  amountOutMax?: bigint;
-  onMint?: () => void;
+  amount: bigint;
+  amountInMax: bigint;
+  onRedeem?: () => void;
 };
 
-export default function MintButton({
-  label = "Mint",
+export default function RedeemButton({
+  label = "Redeem",
   loadingLabel = getLoadingText(label),
   marketId,
   outcome,
-  amount = 1,
-  amountOutMax = BigInt(0),
-  onMint = () => {},
+  amount,
+  amountInMax,
+  onRedeem = () => {},
   ...props
-}: MintButtonProps) {
+}: RedeemButtonProps) {
   const { address, isConnected } = useAccount();
 
-  const mintOutcome = useWriteContract();
-  const mintOutcomeReceipt = useWaitForTransactionReceipt({ hash: mintOutcome.data });
+  const redeemOutcome = useWriteContract();
+  const redeemOutcomeReceipt = useWaitForTransactionReceipt({ hash: redeemOutcome.data });
 
   useEffect(() => {
-    if (mintOutcomeReceipt.isSuccess) {
-      onMint();
+    if (redeemOutcomeReceipt.isSuccess) {
+      onRedeem();
     }
-  }, [onMint, mintOutcomeReceipt]);
+  }, [onRedeem, redeemOutcomeReceipt]);
 
   const isDisabled = !isConnected;
-  const isLoading = mintOutcome.isPending || mintOutcomeReceipt.isLoading;
+  const isLoading = redeemOutcome.isPending || redeemOutcomeReceipt.isLoading;
 
   return (
     <Button
       onPress={() => {
-        mintOutcome.writeContract({
+        redeemOutcome.writeContract({
           address: FLIPSIDE_ADDRESS,
           abi: FLIPSIDE_ABI,
-          functionName: "mintOutcome",
-          args: [marketId, address ?? zeroAddress, BigInt(amount * 1e18), amountOutMax, outcome === Outcome.Yes],
+          functionName: "redeemOutcome",
+          args: [marketId, address ?? zeroAddress, amount, amountInMax, outcome === Outcome.Yes],
         });
       }}
       isDisabled={isDisabled}
